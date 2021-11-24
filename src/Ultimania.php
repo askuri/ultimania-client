@@ -455,7 +455,7 @@ class Ultimania {
      */
     private function showUltiRankInfo(Player $showToPlayer, $rank) {
         $record = $this->records->getRecordByRank($rank);
-        if (!isset($record)) {
+        if ($record === null) {
             $this->aseco->client->query('ChatSendServerMessageToLogin', '$ff0>> $f00This record does not exists', $showToPlayer->login);
             return;
         }

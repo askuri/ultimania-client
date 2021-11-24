@@ -27,10 +27,13 @@ class UltimaniaRecords {
 
     /**
      * @param $rank int Starting at 1
-     * @return UltimaniaRecord
+     * @return UltimaniaRecord|null
      */
     public function getRecordByRank($rank) {
-        return $this->recordsOrderedByScore[$rank - 1];
+        if (isset($this->recordsOrderedByScore[$rank - 1])) {
+            return $this->recordsOrderedByScore[$rank - 1];
+        }
+        return null;
     }
 
     /**
