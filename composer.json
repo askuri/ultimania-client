@@ -1,0 +1,30 @@
+{
+  "name": "askuri/ultimania-client",
+  "description": "description",
+  "minimum-stability": "stable",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "Martin Weber",
+      "email": "enwi2@t-online.de"
+    }
+  ],
+  "autoload": {
+    "classmap": [
+      "src/"
+    ]
+  },
+  "require": {
+    "php": ">=5.6",
+    "ext-curl": "*",
+    "ext-json": "*"
+  },
+  "require-dev": {
+    "phpstan/phpstan": "^1.2",
+    "phpunit/phpunit": "^9.5"
+  },
+  "scripts": {
+    "phpstan": "vendor/bin/phpstan",
+    "phpunit": "vendor/bin/phpunit"
+  }
+}
