@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ultimania>
+    <messages>
+        <!-- record messages -->
+        <record_new>{#server}>> {#highlite}{1}{#record} secured his/her {#rank}{2}{#record}. Ultimania Record!  {3}: {#highlite}{4}{#record} $n({#rank}{5}{#highlite}{6}{#record})</record_new>
+        <record_equal>{#server}>> {#highlite}{1}{#record} equaled his/her {#rank}{2}{#record}. Ultimania Record!  {3}: {#highlite}{4}</record_equal>
+        <record_new_rank>{#server}>> {#highlite}{1}{#record} gained the {#rank}{2}{#record}. Ultimania Record!  {3}: {#highlite}{4}{#record} $n({#rank}{5}{#highlite}{6}{#record})</record_new_rank>
+        <record_first>{#server}>> {#highlite}{1}{#record} claimed the {#rank}{2}{#record}. Ultimania Record!  {3}: {#highlite}{4}</record_first>
+    </messages>
+</ultimania>

@@ -5,6 +5,26 @@ class UltimaniaConfig {
     private $connect_timeout = 10;
     private $request_timeout = 10;
     private $number_of_records_display_limit = 25;
+    private $messageRecordNew;
+    private $messageRecordEqual;
+    private $messageRecordNewRank;
+    private $messageRecordFirst;
+
+    /**
+     * Creates an object of this calls and populates it with the values from the given xml file.
+     * @param $filename
+     * @return UltimaniaConfig
+     */
+    public static function instantiateFromFile($filename) {
+        $ultiConfig = new self();
+        $rawConfig = simplexml_load_file($filename);
+        $ultiConfig->messageRecordNew = $rawConfig->messages->record_new;
+        $ultiConfig->messageRecordEqual = $rawConfig->messages->record_equal;
+        $ultiConfig->messageRecordNewRank = $rawConfig->messages->record_new_rank;
+        $ultiConfig->messageRecordFirst = $rawConfig->messages->record_first;
+
+        return $ultiConfig;
+    }
 
     public function getRefreshInterval() {
         return $this->refresh_interval;
@@ -21,4 +41,22 @@ class UltimaniaConfig {
     public function getNumberOfRecordsDisplayLimit() {
         return $this->number_of_records_display_limit;
     }
+
+    public function getMessageRecordNew() {
+        return (string) $this->messageRecordNew;
+    }
+
+    public function getMessageRecordEqual() {
+        return (string) $this->messageRecordEqual;
+    }
+
+    function getMessageRecordNewRank() {
+        return (string) $this->messageRecordNewRank;
+    }
+
+    public function getMessageRecordFirst() {
+        return (string) $this->messageRecordFirst;
+    }
+
+
 }

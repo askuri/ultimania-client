@@ -89,7 +89,8 @@ require 'UltimaniaRecordImprovement.php';
 require 'UltimaniaLegacyAdapter.php';
 
 
-$ultiConfig = new UltimaniaConfig;
+$ultiConfig = UltimaniaConfig::instantiateFromFile('ultimania.xml');
+
 $ultiRecords = new UltimaniaRecords;
 $ultiMainClass = new Ultimania($ultiConfig, $ultiRecords);
 
