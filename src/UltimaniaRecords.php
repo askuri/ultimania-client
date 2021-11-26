@@ -120,11 +120,11 @@ class UltimaniaRecords {
      * @return array [ login1 => score1, login2 => score2 ]
      */
     public function getRecordsIndexedByLogin() {
-        return array_map(function ($record) {
-            return [
-                $record->getLogin() => $record->getScore(),
-            ];
-        }, $this->recordsOrderedByScore);
+        $indexedByLogin = [];
+        foreach ($this->recordsOrderedByScore as $record) {
+            $indexedByLogin[$record->getLogin()] = $record->getScore();
+        }
+        return $indexedByLogin;
     }
 
     /**

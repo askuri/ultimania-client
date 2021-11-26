@@ -5,6 +5,8 @@ class UltimaniaConfig {
     private $connect_timeout = 10;
     private $request_timeout = 10;
     private $number_of_records_display_limit = 25;
+    private $displayRecordMessagesForBestOnly;
+
     private $messageRecordNew;
     private $messageRecordEqual;
     private $messageRecordNewRank;
@@ -18,6 +20,7 @@ class UltimaniaConfig {
     public static function instantiateFromFile($filename) {
         $ultiConfig = new self();
         $rawConfig = simplexml_load_file($filename);
+        $ultiConfig->displayRecordMessagesForBestOnly = $rawConfig->display_record_messages_for_best_only;
         $ultiConfig->messageRecordNew = $rawConfig->messages->record_new;
         $ultiConfig->messageRecordEqual = $rawConfig->messages->record_equal;
         $ultiConfig->messageRecordNewRank = $rawConfig->messages->record_new_rank;
@@ -42,6 +45,13 @@ class UltimaniaConfig {
         return $this->number_of_records_display_limit;
     }
 
+    /**
+     * @return bool
+     */
+    public function getDisplayRecordMessagesForBestOnly() {
+        return $this->xmlContentToBool($this->displayRecordMessagesForBestOnly);
+    }
+
     public function getMessageRecordNew() {
         return (string) $this->messageRecordNew;
     }
@@ -56,6 +66,13 @@ class UltimaniaConfig {
 
     public function getMessageRecordFirst() {
         return (string) $this->messageRecordFirst;
+    }
+
+    /**
+     * @return bool
+     */
+    private function xmlContentToBool($val) {
+        return filter_var((string) $val, FILTER_VALIDATE_BOOLEAN);
     }
 
 

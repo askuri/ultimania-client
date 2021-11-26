@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * Represents a change (or no change) of a players
+ * record between two points in time.
+ */
 class UltimaniaRecordImprovement {
     const TYPE_NO_IMPROVEMENT = 'NO_IMPROVEMENT';
     const TYPE_NEW = 'NEW'; // secured
@@ -44,6 +48,13 @@ class UltimaniaRecordImprovement {
             return self::TYPE_NEW_RANK;
         }
         return self::TYPE_UNKNOWN;
+    }
+
+    /**
+     * @return int Difference between new and previous score. Positive if improved.
+     */
+    public function getRecordDifference() {
+        return $this->getNewRecord()->getScore() - $this->getNewRecord()->getScore();
     }
 
     /**

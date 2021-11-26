@@ -50,7 +50,6 @@
  * - 54502xx = Recordinfo
  */
 
-Aseco::registerEvent('onSync',						'ulti_onSync'); /** @phpstan-ignore-line */
 Aseco::registerEvent('onNewChallenge2',				'ulti_onNewChallenge2'); /** @phpstan-ignore-line */
 Aseco::registerEvent('onPlayerFinish',				'ulti_onPlayerFinish'); /** @phpstan-ignore-line */
 Aseco::registerEvent('onPlayerConnect',				'ulti_onPlayerConnect'); /** @phpstan-ignore-line */
@@ -80,6 +79,7 @@ const ULTI_EVENT_RECORD_API2           = 'onUltimaniaRecordApi2';
 
 global $ulti;
 global $ultiMainClass;
+global $ultiXasecoAdapter;
 
 require 'Ultimania.php';
 require 'UltimaniaConfig.php';
@@ -87,12 +87,14 @@ require 'UltimaniaRecord.php';
 require 'UltimaniaRecords.php';
 require 'UltimaniaRecordImprovement.php';
 require 'UltimaniaLegacyAdapter.php';
+require 'UltimaniaXasecoAdapter.php';
 
 
 $ultiConfig = UltimaniaConfig::instantiateFromFile('ultimania.xml');
 
 $ultiRecords = new UltimaniaRecords;
-$ultiMainClass = new Ultimania($ultiConfig, $ultiRecords);
+$ultiXasecoAdapter = new UltimaniaXasecoAdapter;
+$ultiMainClass = new Ultimania($ultiConfig, $ultiRecords, $ultiXasecoAdapter);
 
 $ulti = new UltimaniaLegacyAdapter($ultiConfig, $ultiRecords);
 
@@ -137,31 +139,35 @@ function chat_ultilist($aseco, $command) {
  */
 function ulti_onSync($aseco) {
     global $ultiMainClass;
-    $ultiMainClass->onSync($aseco);
+    $ultiMainClass->onStartup();
 }
 function ulti_onNewChallenge2($aseco, $challenge_item) {
     global $ultiMainClass;
-    $ultiMainClass->onNewChallenge2($aseco, $challenge_item);
+    var_dump("ON NEW CHALLENGE");
+    $ultiMainClass->onNewChallenge();
 }
 function ulti_onPlayerFinish($aseco, $finish) {
     global $ultiMainClass;
-    $ultiMainClass->onPlayerFinish($aseco, $finish);
+    $ultiMainClass->onPlayerFinish($finish);
 }
 function ulti_onPlayerConnect($aseco, $player) {
-    global $ultiMainClass;
-    $ultiMainClass->onPlayerConnect($aseco, $player);
+    global $ultiMainClass, $ultiXasecoAdapter;
+
+    if (! $ultiXasecoAdapter->isXasecoStartingUp()) {
+        $ultiMainClass->onPlayerConnect($player);
+    }
 }
 function ulti_onEndRace1($aseco, $race) {
     global $ultiMainClass;
-    $ultiMainClass->onEndRace1($aseco, $race);
+    $ultiMainClass->onEndRace1();
 }
 function ulti_onEverySecond($aseco) {
     global $ultiMainClass;
-    $ultiMainClass->onEverySecond($aseco);
+    $ultiMainClass->onEverySecond();
 }
 function ulti_onMlAnswer($aseco, $answer) {
     global $ultiMainClass;
-    $ultiMainClass->onMlAnswer($aseco, $answer);
+    $ultiMainClass->onMlAnswer($answer);
 }
 function ulti_onMenuLoaded($aseco, $menu) {
     // Doc: http://fish.stabb.de/index.php5?page=downloads&subpage=148

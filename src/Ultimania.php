@@ -1,13 +1,14 @@
 <?php
 
 class Ultimania {
-    private $aseco;
-
     /** @var UltimaniaRecords */
     private $records;
 
     /** @var UltimaniaConfig */
     private $config;
+
+    /** @var UltimaniaXasecoAdapter */
+    private $xasecoAdapter;
 
     /** @var int timestamp of when the next refresh should happen */
     private $nextRefresh;
@@ -15,64 +16,52 @@ class Ultimania {
     /** @var string the actual API URL. URL is retrieved from ULTI_API_INFO URL */
     private $apiUrl;
 
-    public function __construct($ultiConfig, $ultiRecords) {
+    public function __construct($ultiConfig, $ultiRecords, $xasecoAdapter) {
         $this->config = $ultiConfig;
         $this->records = $ultiRecords;
+        $this->xasecoAdapter = $xasecoAdapter;
         $this->nextRefresh = time(); // do it immediately, when plugin initiated
     }
 
     /**************************
      * BEGIN EVENT LISTENERS
      **/
-    public function onSync($aseco) {
-        $this->aseco = $aseco;
-
+    public function onStartup() {
         $this->doEnvironmentChecks();
-        $this->fetchAndSetApiUrl();
         $this->registerWithThirdpartyPluginsUpToDate();
     }
 
-    public function onNewChallenge2($aseco, $chall_item) {
+    public function onNewChallenge() {
         // regularly check if there's a new API URL
         $this->fetchAndSetApiUrl();
-        $this->refreshRecordsListAndReleaseEvent();
 
-        // show pb widget to everyone
-        $recordsByLogin = $this->records->getRecordsIndexedByLogin();
-        foreach ($this->aseco->server->players->player_list as $p) {
-            $this->pbWidgetShow($p, $recordsByLogin[$p->login]);
-        }
+        $this->refreshRecordsListAndReleaseEvent();
+        $this->showPbWidgetToEveryone();
     }
 
-    public function onPlayerFinish(Aseco $aseco, Record $finish_item) {
+    public function onPlayerFinish(Record $finish_item) {
         if ($finish_item->score == 0) return; // reject scores with 0 points
 
-        $oldRecord = $this->records->getRecordsIndexedByLogin()[$finish_item->player->login];
-        $newRecord = $this->mapXasecoRecordToUltiRecord($finish_item);
+        $improvement = $this->records->insertOrUpdate($this->mapXasecoRecordToUltiRecord($finish_item));
 
-        $improvementType = $this->records->insertOrUpdate($newRecord);
-
-        $response = $this->submitRecordToApi($newRecord);
+        $response = $this->submitRecordToApi($improvement->getNewRecord());
 
         // We got the response from the server. Let's look if the player is banned
         if ($response['banned'] == true) {
             // Banned, so we punish him with this spam messages every finish
             $message = ('$f00Your Records won\'t be saved on Ultimania because you\'re banned (Reason: ' . $response['reason'] . ')');
-            $aseco->client->query('ChatSendServerMessageToLogin', $message, $newRecord->getLogin());
+            $this->xasecoAdapter->chatSendServerMessageToPlayer($message, $finish_item->player);
             return;
         }
 
-        $this->displayPlayerFinishChatMessage($finish_item->player, $oldRecord, $newRecord, $improvementType);
+        $this->displayPlayerFinishChatMessage($finish_item->player, $improvement);
 
         // Not banned, so we throw event
-        $this->releaseUltimaniaRecordEvent($newRecord);
+        $this->releaseUltimaniaRecordEvent($improvement->getNewRecord());
     }
 
-    public function onPlayerConnect($aseco, Player $player) {
+    public function onPlayerConnect(Player $player) {
         $banned_players = $this->fetchBannedPlayers();
-
-        if ($banned_players == 'NULL') return;
-        if (!is_array($banned_players)) return;
 
         foreach ($banned_players as $data) {
             if ($data['login'] == $player->login) {
@@ -99,7 +88,7 @@ class Ultimania {
             $command = [];
             $command['author'] = $player;
             $command['params'] = 'RightBottomNoDedi';
-            chat_recpanel($aseco, $command);
+            chat_recpanel($this->xasecoAdapter->getAsecoObject(), $command);
         }
 
         // display global PB widget
@@ -107,12 +96,12 @@ class Ultimania {
         $this->pbWidgetShow($player, $recordsByLogin[$player->login]);
     }
 
-    public function onEndRace1($aseco, $race) {
+    public function onEndRace1() {
         $this->mainWindowHide(false); // Close window to all players
         $this->pbWidgetHide();
     }
 
-    public function onEverySecond($aseco) {
+    public function onEverySecond() {
         if (time() >= $this->nextRefresh) {
             $this->refreshRecordsListAndReleaseEvent();
 
@@ -120,17 +109,17 @@ class Ultimania {
         }
     }
 
-    public function onMlAnswer($aseco, $answer) {
-        $player = $this->getPlayerObjectFromLogin($answer[1]);
+    public function onMlAnswer($answer) {
+        $player = $this->xasecoAdapter->getPlayerObjectFromLogin($answer[1]);
         $actionId = $answer[2];
 
         switch ($actionId) {
             case ULTI_ID_PREFIX . 101:
                 // Close Records Eyepiece windows
-                $aseco->releaseEvent('onPlayerManialinkPageAnswer', array($answer[0], $player->login, 91800));
+                $this->xasecoAdapter->releaseOnPlayerManialinkPageAnswerEvent($answer[0], $player, 91800);
 
                 // Close standard windows like /list
-                $aseco->releaseEvent('onPlayerManialinkPageAnswer', array($answer[0], $player->login, 0));
+                $this->xasecoAdapter->releaseOnPlayerManialinkPageAnswerEvent($answer[0], $player, 0);
 
                 $this->mainWindowShow($player);
                 break;
@@ -145,7 +134,6 @@ class Ultimania {
                 // Prefix for recordinfos is 2
                 if (substr($actionId, 0, strlen(ULTI_ID_PREFIX) + 1) == ULTI_ID_PREFIX . 2) {
                     $rank = substr($actionId, strlen(ULTI_ID_PREFIX) + 1) + 1;
-                    var_dump($rank);
 
                     $this->showUltiRankInfo($player, $rank);
                     $this->mainWindowHide($player);
@@ -161,7 +149,7 @@ class Ultimania {
         $player = $command['author'];
 
         if (!is_numeric($command['params'])) {
-            $this->aseco->client->query('ChatSendServerMessageToLogin', '$ff0> $f00Usage: $bbb/ultirankinfo ranknumber$f00  (e.g. $bbb/ultirankinfo 1$f00)', $player->login);
+            $this->xasecoAdapter->chatSendServerMessageToPlayer('$ff0> $f00Usage: $bbb/ultirankinfo ranknumber$f00  (e.g. $bbb/ultirankinfo 1$f00)', $player);
             return;
         }
 
@@ -175,26 +163,27 @@ class Ultimania {
     }
 
     public function onChatUltiUpdate($command) {
-        $login = $command['author']->login;
-        if ($this->aseco->isMasterAdminL($login)) {
+        /** @var Player $player */
+        $player = $command['author'];
+        if ($this->xasecoAdapter->isMasterAdmin($player)) {
             $newest = $this->fetchNewestAvailableUltimaniaClientVersion();
             if (version_compare(ULTI_VERSION, $newest) == -1) {
                 $content = file_get_contents(ULTI_API_INFO . 'tmf/versions/' . $newest . '.php_');
 
                 if ($content) {
                     if (!file_put_contents(getcwd() . '/plugins/plugin.ultimania.php', $content)) {
-                        $this->aseco->client->query('ChatSendServerMessageToLogin', '$f00Unable to replace "plugin.ultimania.php". Please check the file-rights and try again.', $login);
+                        $this->xasecoAdapter->chatSendServerMessageToPlayer('$f00Unable to replace "plugin.ultimania.php". Please check the file-rights and try again.', $player);
                     } else {
-                        $this->aseco->client->query('ChatSendServerMessageToLogin', '$0f0Successfully updated. Please restart XAseco', $login);
+                        $this->xasecoAdapter->chatSendServerMessageToPlayer('$0f0Successfully updated. Please restart XAseco', $player);
                     }
                 } else {
-                    $this->aseco->client->query('ChatSendServerMessageToLogin', '$f00Getting newest version file failed!', $login);
+                    $this->xasecoAdapter->chatSendServerMessageToPlayer('$f00Getting newest version file failed!', $player);
                 }
             } else {
-                $this->aseco->client->query('ChatSendServerMessageToLogin', '$0f0No update available', $login);
+                $this->xasecoAdapter->chatSendServerMessageToPlayer('$0f0No update available', $player);
             }
         } else {
-            $this->aseco->client->query('ChatSendServerMessageToLogin', '$f00No permissions!', $login);
+            $this->xasecoAdapter->chatSendServerMessageToPlayer('$f00No permissions!', $player);
         }
     }
 
@@ -208,17 +197,17 @@ class Ultimania {
 
     private function sendRequest($action, $params = []) {
         // why is this here? why did i do this many years ago?
-        if (!$this->aseco->server->challenge->uid) {
-            return;
+        if (!$this->xasecoAdapter->getCurrentChallengeObject()->uid) {
+            trigger_error('[Ultimania] Error: trying to send request to server without a valid track UID. Action: '. $action, E_USER_ERROR);
         }
 
         $params_predefined = [ // These are send on all requests
             'action' => $action,
-            'uid' => $this->aseco->server->challenge->uid,
-            'mapname' => $this->aseco->server->challenge->name,
+            'uid' => $this->xasecoAdapter->getCurrentChallengeObject()->uid,
+            'mapname' => $this->xasecoAdapter->getCurrentChallengeObject()->name,
             'stunt' => 1,
-            'server' => $this->aseco->server->serverlogin,
-            'servername' => $this->aseco->server->nickname
+            'server' => $this->xasecoAdapter->getServerObject()->serverlogin,
+            'servername' => $this->xasecoAdapter->getServerObject()->nickname
         ];
 
         $merged_params = array_merge($params, $params_predefined);
@@ -241,11 +230,11 @@ class Ultimania {
 
         if ($response === null && !empty($responseJson)) {
             trigger_error('[Ultimania] Could not json_decode API response! Please report this to enwi2@t-online.de! Raw result:', E_USER_WARNING);
-            $this->aseco->console($responseJson);
+            $this->xasecoAdapter->console($responseJson);
         }
 
         if (!empty($response['error'])) {
-            $this->aseco->console('[Ultimania] Error occurred on action ' . $params['action'] . ': ' . $response['error']);
+            trigger_error('[Ultimania] Error occurred on action ' . $params['action'] . ': ' . $response['error'], E_USER_WARNING);
         }
 
         return $response;
@@ -376,7 +365,7 @@ class Ultimania {
 
         $xml .= '</frame> </manialink>';
 
-        $this->aseco->client->addCall('SendDisplayManialinkPageToLogin', array($player->login, $xml, 0, false));
+        $this->xasecoAdapter->sendManialinkToPlayer($player, $xml);
     }
 
     /**
@@ -386,9 +375,9 @@ class Ultimania {
         $xml = '<manialink id="ultimania_window"></manialink>';
 
         if ($player === null) {
-            $this->aseco->client->addCall('SendDisplayManialinkPage', array($xml, 0, false));
+            $this->xasecoAdapter->sendManialinkToEveryone($xml);
         } else {
-            $this->aseco->client->addCall('SendDisplayManialinkPageToLogin', array($player->login, $xml, 0, false));
+            $this->xasecoAdapter->sendManialinkToPlayer($player, $xml);
         }
     }
 
@@ -411,17 +400,17 @@ class Ultimania {
 			</frame>
 		</manialink>';
 
-        $this->aseco->client->addCall('SendDisplayManialinkPageToLogin', array($player->login, $xml, 0, false));
+        $this->xasecoAdapter->sendManialinkToPlayer($player, $xml);
     }
 
     private function pbWidgetHide() {
         $xml = '<manialink id="ultimania_pbwidget"></manialink>';
-        $this->aseco->client->addCall('SendDisplayManialinkPage', array($xml, 0, false));
+        $this->xasecoAdapter->sendManialinkToEveryone($xml);
     }
 
     private function showFullRecordList(Player $player) {
         if ($this->records->isEmpty()) {
-            $this->aseco->client->query('ChatSendServerMessageToLogin', '$06fNo Records. Feel free to drive the first :)', $player->login);
+            $this->xasecoAdapter->chatSendServerMessageToPlayer('$06fNo Records. Feel free to drive the first :)', $player);
             return;
         }
 
@@ -456,7 +445,7 @@ class Ultimania {
     private function showUltiRankInfo(Player $showToPlayer, $rank) {
         $record = $this->records->getRecordByRank($rank);
         if ($record === null) {
-            $this->aseco->client->query('ChatSendServerMessageToLogin', '$ff0>> $f00This record does not exists', $showToPlayer->login);
+            $this->xasecoAdapter->chatSendServerMessageToPlayer('$ff0>> $f00This record does not exists', $showToPlayer);
             return;
         }
 
@@ -475,7 +464,7 @@ class Ultimania {
             array('Login', '$FFC' . $record->getLogin()),
             array('Nickname', '$FFC' . $record->getNick()),
             array('Recorded on', '$FFC' . $dateTimeStringOrGery),
-            array('$h[ulti:admin_rec?uid=' . $this->aseco->server->challenge->uid . '&login=' . $record->getLogin() . ']Admin')
+            array('$h[ulti:admin_rec?uid=' . $this->xasecoAdapter->getCurrentChallengeObject()->uid . '&login=' . $record->getLogin() . ']Admin')
         );
 
         // display ManiaLink message
@@ -557,12 +546,12 @@ class Ultimania {
             trigger_error('[Ultimania] Can not identify the System, "XASECO_VERSION" is unset! This plugin runs only with XAseco/' . ULTI_MIN_XASECO . '+', E_USER_ERROR);
         }
 
-        if ($this->aseco->server->getGame() != 'TMF') {
-            trigger_error('[Ultimania] This plugin supports TMF only. Can not start with a "' . $this->aseco->server->getGame() . '" Dedicated-Server!', E_USER_ERROR);
+        if ($this->xasecoAdapter->getGameType() != 'TMF') {
+            trigger_error('[Ultimania] This plugin supports TMF only. Can not start with a "' . $this->xasecoAdapter->getGameType() . '" Dedicated-Server!', E_USER_ERROR);
         }
 
-        if ($this->aseco->server->gameinfo->mode != 4) {
-            trigger_error('[Ultimania] This plugin supports stunts game mode only. Current game mode is: ' . $this->aseco->server->gameinfo->mode, E_USER_ERROR);
+        if ($this->xasecoAdapter->getGameInfo()->mode != Gameinfo::STNT) {
+            trigger_error('[Ultimania] This plugin supports stunts game mode only. Current game mode is: ' . $this->xasecoAdapter->getGameInfo()->getMode(), E_USER_ERROR);
         }
     }
 
@@ -577,29 +566,21 @@ class Ultimania {
         return $time;
     }
 
-    /**
-     * @param $login
-     * @return mixed
-     */
-    private function getPlayerObjectFromLogin($login) {
-        return $this->aseco->server->players->player_list[$login];
-    }
-
     // Register this to the global version pool (for up-to-date checks)
     private function registerWithThirdpartyPluginsUpToDate() {
-        $this->aseco->plugin_versions[] = array(
-            'plugin' => 'plugin.ultimania.php',
-            'author' => 'askuri',
-            'version' => ULTI_VERSION
+        $this->xasecoAdapter->registerWithThirdpartyPluginsUpToDate(
+            'plugin.ultimania.php',
+            'askuri',
+            ULTI_VERSION
         );
     }
 
     private function releaseRecordsLoadedEvent() {
-        $this->aseco->releaseEvent(ULTI_EVENT_RECORDS_LOADED_API2, $this->records->getAll());
+        $this->xasecoAdapter->releaseEvent(ULTI_EVENT_RECORDS_LOADED_API2, $this->records->getAll());
     }
 
     private function releaseUltimaniaRecordEvent(UltimaniaRecord $record) {
-        $this->aseco->releaseEvent(ULTI_EVENT_RECORD_API2, $record);
+        $this->xasecoAdapter->releaseEvent(ULTI_EVENT_RECORD_API2, $record);
     }
 
     private function refreshRecordsListAndReleaseEvent() {
@@ -607,24 +588,51 @@ class Ultimania {
         $this->releaseRecordsLoadedEvent();
     }
 
-    /**
-     * @param $oldRecord UltimaniaRecord|null
-     * @param $improvementType 'NO_IMPROVEMENT'|'NEW'|'EQUAL'|'NEW_RANK'|'FIRST'
-     */
-    private function displayPlayerFinishChatMessage(Player $player, $oldRecord, UltimaniaRecord $newRecord, $improvementType) {
-        switch ($improvementType) {
-            case 'NEW':
-                $this->aseco->client->query('ChatSendServerMessage', 'NEW - secured');
+    private function displayPlayerFinishChatMessage(Player $player, UltimaniaRecordImprovement $improvement) {
+        // check if record should be shown according to settings
+        if ($this->config->getDisplayRecordMessagesForBestOnly() &&
+            $improvement->getNewRank() > $this->config->getNumberOfRecordsDisplayLimit()) {
+            return;
+        }
+
+        switch ($improvement->getType()) {
+            case UltimaniaRecordImprovement::TYPE_NEW:
+                $message = $this->xasecoAdapter->formatColors(formatText($this->config->getMessageRecordNew(),
+                    $player->nickname,
+                    $improvement->getNewRank(),
+                    $improvement->getNewRecord()->getScore(),
+                    $improvement->getPreviousRank(),
+                    $improvement->getRecordDifference()
+                ));
                 break;
-            case 'EQUAL':
-                $this->aseco->client->query('ChatSendServerMessage', 'EQUAL - equaled');
+            case UltimaniaRecordImprovement::TYPE_EQUAL:
+                $message = $this->xasecoAdapter->formatColors(formatText($this->config->getMessageRecordEqual(),
+                    $player->nickname,
+                    $improvement->getNewRank(),
+                    $improvement->getNewRecord()->getScore()
+                ));
                 break;
-            case 'NEW_RANK':
-                $this->aseco->client->query('ChatSendServerMessage', 'NEW_RANK - gained');
+            case UltimaniaRecordImprovement::TYPE_NEW_RANK:
+                $message = $this->xasecoAdapter->formatColors(formatText($this->config->getMessageRecordNewRank(),
+                    $player->nickname,
+                    $improvement->getNewRank(),
+                    $improvement->getNewRecord()->getScore(),
+                    $improvement->getPreviousRank(),
+                    $improvement->getRecordDifference()
+                ));
                 break;
-            case 'FIRST':
-                $this->aseco->client->query('ChatSendServerMessage', 'FIRST - claimed');
+            case UltimaniaRecordImprovement::TYPE_FIRST:
+                $message = $this->xasecoAdapter->formatColors(formatText($this->config->getMessageRecordFirst(),
+                    $player->nickname,
+                    $improvement->getNewRank(),
+                    $improvement->getNewRecord()->getScore()
+                ));
                 break;
+            default:
+                $message = null;
+        }
+        if ($message) {
+            $this->xasecoAdapter->chatSendServerMessage($message);
         }
     }
 
@@ -669,6 +677,13 @@ class Ultimania {
         return array_map('self::mapApiRecordDtoToUltiRecord', $dtos);
     }
 
+    private function showPbWidgetToEveryone() {
+        $recordsByLogin = $this->records->getRecordsIndexedByLogin();
+        foreach ($this->xasecoAdapter->getPlayerList() as $p) {
+            $this->pbWidgetShow($p, $recordsByLogin[$p->login]);
+        }
+    }
+    
     /**
      * END HELPER METHODS
      ********************/
