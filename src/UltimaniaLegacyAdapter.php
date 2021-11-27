@@ -10,6 +10,10 @@ class UltimaniaLegacyAdapter {
     /** @var UltimaniaRecords */
     private $ultiRecords;
 
+    /**
+     * @param UltimaniaConfig $ultiConfig
+     * @param UltimaniaRecords $ultiRecords
+     */
     public function __construct($ultiConfig, $ultiRecords) {
         global $aseco;
         $this->aseco = $aseco;
@@ -17,6 +21,10 @@ class UltimaniaLegacyAdapter {
         $this->ultiRecords = $ultiRecords;
     }
 
+    /**
+     * @param string $name
+     * @return array{'login': string, "nick": string, "score": int}[]|void
+     */
     public function __get($name) {
         if ($name === 'records') {
             $ultiRecords = $this->ultiRecords->getLimitedBy($this->ultiConfig->getNumberOfRecordsDisplayLimit());
@@ -26,6 +34,7 @@ class UltimaniaLegacyAdapter {
 
     /**
      * @param UltimaniaRecord[] $records
+     * @return void
      */
     public function mapRecordsLoadedEventToLegacyEvent($records) {
         $this->aseco->releaseEvent(ULTI_EVENT_RECORDS_LOADED_LEGACY, $this->mapUltimaniaRecordsToLegacyArray($records));
@@ -33,6 +42,7 @@ class UltimaniaLegacyAdapter {
 
     /**
      * @param UltimaniaRecord $record
+     * @return void
      */
     public function mapRecordEventToLegacyEvent($record) {
         $this->aseco->releaseEvent(ULTI_EVENT_RECORD_LEGACY, $this->mapUltimaniaRecordToLegacyArray($record));
@@ -40,9 +50,9 @@ class UltimaniaLegacyAdapter {
 
     /**
      * @param UltimaniaRecord $record
-     * @return array
+     * @return array{'login': string, "nick": string, "score": int}
      */
-    private function mapUltimaniaRecordToLegacyArray($record) {
+    private function mapUltimaniaRecordToLegacyArray(UltimaniaRecord $record) {
         return [
             'login' => $record->getLogin(),
             'nick' => $record->getNick(),
@@ -52,7 +62,7 @@ class UltimaniaLegacyAdapter {
 
     /**
      * @param UltimaniaRecord[] $ultiRecords
-     * @return array
+     * @return array{'login': string, "nick": string, "score": int}[]
      */
     private function mapUltimaniaRecordsToLegacyArray($ultiRecords) {
         return array_map('self::mapUltimaniaRecordToLegacyArray', $ultiRecords);

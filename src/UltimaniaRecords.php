@@ -19,6 +19,7 @@ class UltimaniaRecords {
 
     /**
      * Return the best $limit records
+     * @param int $limit
      * @return UltimaniaRecord[]
      */
     public function getLimitedBy($limit) {
@@ -38,6 +39,7 @@ class UltimaniaRecords {
 
     /**
      * @param UltimaniaRecord[] $records
+     * @return void
      */
     public function setAll($records) {
         $this->recordsOrderedByScore = $records;
@@ -72,17 +74,18 @@ class UltimaniaRecords {
     }
 
     /**
-     * @return array [ login1 => score1, login2 => score2 ]
+     * @return array{string: UltimaniaRecord} {login: UltimaniaRecord}[]
      */
     public function getRecordsIndexedByLogin() {
         $indexedByLogin = [];
         foreach ($this->recordsOrderedByScore as $record) {
-            $indexedByLogin[$record->getLogin()] = $record->getScore();
+            $indexedByLogin[$record->getLogin()] = $record;
         }
         return $indexedByLogin;
     }
 
     /**
+     * @param string $login
      * @return UltimaniaRecord|null
      */
     public function getRecordByLogin($login) {
@@ -96,6 +99,7 @@ class UltimaniaRecords {
     /**
      * @param UltimaniaRecord|null $previousRecord
      * @param UltimaniaRecord $newRecord
+     * @return void
      */
     private function updateScoreOfRecordIfImproved($previousRecord, UltimaniaRecord $newRecord) {
         if ($previousRecord instanceof UltimaniaRecord &&
@@ -109,6 +113,7 @@ class UltimaniaRecords {
 
     /**
      * Returns the rank of a player or -1 if he doesn't have a record yet
+     * @param string $login
      * @return int
      */
     private function getRankByLogin($login) {
@@ -120,9 +125,13 @@ class UltimaniaRecords {
         return -1;
     }
 
-    private function cloneIfIsObject($pointerToPreviousRecord) {
-        if (is_object($pointerToPreviousRecord)) {
-            return clone $pointerToPreviousRecord;
+    /**
+     * @param mixed $obj
+     * @return object|null
+     */
+    private function cloneIfIsObject($obj) {
+        if (is_object($obj)) {
+            return clone $obj;
         }
         return null;
     }

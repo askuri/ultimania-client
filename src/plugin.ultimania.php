@@ -101,7 +101,10 @@ $ulti = new UltimaniaLegacyAdapter($ultiConfig, $ultiRecords);
 /**
  * usort callback for records.
  * Use with usort($array, 'ulti_sortRecordsDesc')
- **/
+ * @param UltimaniaRecord $a
+ * @param UltimaniaRecord $b
+ * @return int
+ */
 function ulti_sortRecordsDesc(UltimaniaRecord $a, UltimaniaRecord $b) {
     if ($a->getScore() == $b->getScore()) {
         return 0;
@@ -114,61 +117,61 @@ function ulti_sortRecordsDesc(UltimaniaRecord $a, UltimaniaRecord $b) {
  * Chatcommands
  */
 
-function chat_ultirankinfo($aseco, $command) {
+function chat_ultirankinfo($aseco, $command) { /** @phpstan-ignore-line */
     global $ultiMainClass;
-    $ultiMainClass->onChatUltiRankInfo($command);
+    $ultiMainClass->onChatUltiRankInfo($command['author'], $command['params']);
 }
 
-function chat_ultiwindow($aseco, $command) {
+function chat_ultiwindow($aseco, $command) { /** @phpstan-ignore-line */
     global $ultiMainClass;
-    $ultiMainClass->onChatUltiWindow($command);
+    $ultiMainClass->onChatUltiWindow($command['author']);
 }
 
-function chat_ultiupdate($aseco, $command) {
+function chat_ultiupdate($aseco, $command) { /** @phpstan-ignore-line */
     global $ultiMainClass;
-    $ultiMainClass->onChatUltiUpdate($command);
+    $ultiMainClass->onChatUltiUpdate($command['author']);
 }
 
-function chat_ultilist($aseco, $command) {
+function chat_ultilist($aseco, $command) { /** @phpstan-ignore-line */
     global $ultiMainClass;
-    $ultiMainClass->onChatUltiList($command);
+    $ultiMainClass->onChatUltiList($command['author']);
 }
 
 /**
  * Callbacks
  */
-function ulti_onSync($aseco) {
+function ulti_onSync($aseco) { /** @phpstan-ignore-line */
     global $ultiMainClass;
     $ultiMainClass->onStartup();
 }
-function ulti_onNewChallenge2($aseco, $challenge_item) {
+function ulti_onNewChallenge2($aseco, $challenge_item) { /** @phpstan-ignore-line */
     global $ultiMainClass;
     $ultiMainClass->onNewChallenge();
 }
-function ulti_onPlayerFinish($aseco, $finish) {
+function ulti_onPlayerFinish($aseco, $finish) { /** @phpstan-ignore-line */
     global $ultiMainClass;
     $ultiMainClass->onPlayerFinish($finish);
 }
-function ulti_onPlayerConnect($aseco, $player) {
+function ulti_onPlayerConnect($aseco, $player) { /** @phpstan-ignore-line */
     global $ultiMainClass, $ultiXasecoAdapter;
 
     if (! $ultiXasecoAdapter->isXasecoStartingUp()) {
         $ultiMainClass->onPlayerConnect($player);
     }
 }
-function ulti_onEndRace1($aseco, $race) {
+function ulti_onEndRace1($aseco, $race) { /** @phpstan-ignore-line */
     global $ultiMainClass;
     $ultiMainClass->onEndRace1();
 }
-function ulti_onEverySecond($aseco) {
+function ulti_onEverySecond($aseco) { /** @phpstan-ignore-line */
     global $ultiMainClass;
     $ultiMainClass->onEverySecond();
 }
-function ulti_onMlAnswer($aseco, $answer) {
-    global $ultiMainClass;
-    $ultiMainClass->onMlAnswer($answer);
+function ulti_onMlAnswer($aseco, $answer) { /** @phpstan-ignore-line */
+    global $ultiMainClass, $ultiXasecoAdapter;
+    $ultiMainClass->onMlAnswer($answer[0], $ultiXasecoAdapter->getPlayerObjectFromLogin($answer[1]), $answer[2]);
 }
-function ulti_onMenuLoaded($aseco, $menu) {
+function ulti_onMenuLoaded($aseco, $menu) { /** @phpstan-ignore-line */
     // Doc: http://fish.stabb.de/index.php5?page=downloads&subpage=148
     $menu->addEntry('tracks', 'fulllist', true, 'Ultimania', 'ultifolder', '');
 
@@ -177,11 +180,11 @@ function ulti_onMenuLoaded($aseco, $menu) {
     $menu->addEntry('ulti', '', true, 'Open window', 'ulti_openwindow', '/ultiwindow');
     $menu->addEntry('ulti', '', true, '$ff0Update plugin', 'ulti_openwindow', '/ultiupdate', 'MasterAdmin');
 }
-function ulti_onUltimaniaRecordsLoadedApi2($aseco, $records) {
+function ulti_onUltimaniaRecordsLoadedApi2($aseco, $records) { /** @phpstan-ignore-line */
     global $ulti;
     $ulti->mapRecordsLoadedEventToLegacyEvent($records);
 }
-function ulti_onUltimaniaRecordApi2($aseco, $record) {
+function ulti_onUltimaniaRecordApi2($aseco, $record) { /** @phpstan-ignore-line */
     global $ulti;
     $ulti->mapRecordEventToLegacyEvent($record);
 }

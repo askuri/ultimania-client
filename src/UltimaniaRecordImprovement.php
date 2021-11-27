@@ -66,6 +66,7 @@ class UltimaniaRecordImprovement {
 
     /**
      * @param int $previousRank
+     * @return void
      */
     public function setPreviousRank($previousRank) {
         $this->previousRank = $previousRank;
@@ -80,6 +81,7 @@ class UltimaniaRecordImprovement {
 
     /**
      * @param UltimaniaRecord|null $previousRecord
+     * @return void
      */
     public function setPreviousRecord($previousRecord) {
         $this->previousRecord = $previousRecord;
@@ -94,6 +96,7 @@ class UltimaniaRecordImprovement {
 
     /**
      * @param int $newRank
+     * @return void
      */
     public function setNewRank($newRank) {
         $this->newRank = $newRank;
@@ -108,6 +111,7 @@ class UltimaniaRecordImprovement {
 
     /**
      * @param UltimaniaRecord $newRecord
+     * @return void
      */
     public function setNewRecord($newRecord) {
         $this->newRecord = $newRecord;

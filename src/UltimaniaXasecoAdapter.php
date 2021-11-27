@@ -5,6 +5,9 @@ class UltimaniaXasecoAdapter {
     /** @var Aseco */
     private $aseco;
 
+    /**
+     *
+     */
     public function __construct() {
         global $aseco;
 
@@ -22,6 +25,7 @@ class UltimaniaXasecoAdapter {
 
     /**
      * @param string $message
+     * @return void
      */
     public function console($message) {
         $this->aseco->console($message);
@@ -36,6 +40,7 @@ class UltimaniaXasecoAdapter {
 
     /**
      * @param String $message
+     * @return void
      */
     public function chatSendServerMessage($message) {
         $this->aseco->client->query('ChatSendServerMessage', $message);
@@ -44,11 +49,16 @@ class UltimaniaXasecoAdapter {
     /**
      * @param String $message
      * @param Player $player
+     * @return void
      */
     public function chatSendServerMessageToPlayer($message, Player $player) {
         $this->aseco->client->query('ChatSendServerMessageToLogin', $message, $player->login);
     }
 
+    /**
+     * @param Player $player
+     * @return bool
+     */
     public function isMasterAdmin(Player $player) {
         return $this->aseco->isMasterAdmin($player);
     }
@@ -74,6 +84,9 @@ class UltimaniaXasecoAdapter {
         return $this->aseco->server->gameinfo;
     }
 
+    /**
+     * @return Server
+     */
     public function getServerObject() {
         return $this->aseco->server;
     }
@@ -87,6 +100,7 @@ class UltimaniaXasecoAdapter {
     }
 
     /**
+     * @param string $login
      * @return Player
      */
     public function getPlayerObjectFromLogin($login) {
@@ -97,6 +111,7 @@ class UltimaniaXasecoAdapter {
      * @param int $playerUid server's player uid
      * @param Player $player
      * @param int $action action id
+     * @return void
      */
     public function releaseOnPlayerManialinkPageAnswerEvent($playerUid, Player $player, $action) {
         $this->aseco->releaseEvent('onPlayerManialinkPageAnswer',  array($playerUid, $player->login, $action));
@@ -105,6 +120,7 @@ class UltimaniaXasecoAdapter {
     /**
      * @param string $name
      * @param mixed $content
+     * @return void
      */
     public function releaseEvent($name, $content) {
         $this->aseco->releaseEvent($name, $content);
@@ -112,6 +128,7 @@ class UltimaniaXasecoAdapter {
 
     /**
      * @param string $text
+     * @return string
      */
     public function formatColors($text) {
         return $this->aseco->formatColors($text);
@@ -122,6 +139,7 @@ class UltimaniaXasecoAdapter {
      * @param string $xml Manialink XML
      * @param int $autohideTimeout timeout in seconds
      * @param bool $hideOnClick
+     * @return void
      */
     public function sendManialinkToPlayer($player, $xml, $autohideTimeout = 0, $hideOnClick = false) {
         $this->aseco->client->addCall('SendDisplayManialinkPageToLogin', array($player->login, $xml, $autohideTimeout, $hideOnClick));
@@ -131,6 +149,7 @@ class UltimaniaXasecoAdapter {
      * @param string $xml Manialink XML
      * @param int $autohideTimeout timeout in seconds
      * @param bool $hideOnClick
+     * @return void
      */
     public function sendManialinkToEveryone($xml, $autohideTimeout = 0, $hideOnClick = false) {
         $this->aseco->client->addCall('SendDisplayManialinkPage', array($xml, $autohideTimeout, $hideOnClick));
@@ -140,6 +159,7 @@ class UltimaniaXasecoAdapter {
      * @param string $plugin filename of the plugin?
      * @param string $author
      * @param string $version
+     * @return void
      */
     public function registerWithThirdpartyPluginsUpToDate($plugin, $author, $version) {
         $this->aseco->plugin_versions[] = array( /** @phpstan-ignore-line */
