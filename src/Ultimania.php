@@ -133,7 +133,7 @@ class Ultimania {
 
                 // Prefix for recordinfos is 2
                 if (substr($actionId, 0, strlen(ULTI_ID_PREFIX) + 1) == ULTI_ID_PREFIX . 2) {
-                    $rank = substr($actionId, strlen(ULTI_ID_PREFIX) + 1) + 1;
+                    $rank = intval(substr($actionId, strlen(ULTI_ID_PREFIX) + 1)) + 1;
 
                     $this->showUltiRankInfo($player, $rank);
                     $this->mainWindowHide($player);
@@ -329,8 +329,8 @@ class Ultimania {
             $y = -3;
 
             /**
-             * @var $i int rank - 1
-             * @var $record UltimaniaRecord
+             * @var int $i rank - 1
+             * @var UltimaniaRecord $record
              */
             foreach ($this->records->getLimitedBy($this->config->getNumberOfRecordsDisplayLimit()) as $i => $record) {
                 $rank = $i + 1;
@@ -369,7 +369,7 @@ class Ultimania {
     }
 
     /**
-     * @param $player Player|null
+     * @param Player|null $player
      */
     private function mainWindowHide($player) {
         $xml = '<manialink id="ultimania_window"></manialink>';
@@ -439,8 +439,8 @@ class Ultimania {
     }
 
     /**
-     * @param $showToPlayer Player player to show the information to
-     * @param $rank int starting from 1. Rank that information should be shown about
+     * @param Player $showToPlayer player to show the information to
+     * @param int $rank starting from 1. Rank that information should be shown about
      */
     private function showUltiRankInfo(Player $showToPlayer, $rank) {
         $record = $this->records->getRecordByRank($rank);
@@ -555,6 +555,10 @@ class Ultimania {
         }
     }
 
+    /**
+     * @param int $timestamp
+     * @return string
+     */
     private function timestampToDateTimeStringOrGery($timestamp) {
         // Geryimports were done on 2013/24/03 and other dates. I keep searching them
         if ($timestamp > 1364148372 and $timestamp <= 1367798399) {
@@ -637,7 +641,7 @@ class Ultimania {
     }
 
     /**
-     * @param $xasecoRecord Record
+     * @param Record $xasecoRecord
      * @return UltimaniaRecord
      */
     private function mapXasecoRecordToUltiRecord(Record $xasecoRecord) {
@@ -661,7 +665,7 @@ class Ultimania {
     }
 
     /**
-     * @param $dto array
+     * @param array $dto
      * @return UltimaniaRecord
      */
     private function mapApiRecordDtoToUltiRecord($dto) {
@@ -673,6 +677,10 @@ class Ultimania {
         );
     }
 
+    /**
+     * @param array $dtos
+     * @return array
+     */
     private function mapApiRecordDtosToUltiRecords($dtos) {
         return array_map('self::mapApiRecordDtoToUltiRecord', $dtos);
     }

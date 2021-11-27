@@ -14,7 +14,7 @@ class UltimaniaConfig {
 
     /**
      * Creates an object of this calls and populates it with the values from the given xml file.
-     * @param $filename
+     * @param string $filename
      * @return UltimaniaConfig
      */
     public static function instantiateFromFile($filename) {

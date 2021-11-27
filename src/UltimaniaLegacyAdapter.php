@@ -25,21 +25,21 @@ class UltimaniaLegacyAdapter {
     }
 
     /**
-     * @param $records UltimaniaRecord[]
+     * @param UltimaniaRecord[] $records
      */
     public function mapRecordsLoadedEventToLegacyEvent($records) {
         $this->aseco->releaseEvent(ULTI_EVENT_RECORDS_LOADED_LEGACY, $this->mapUltimaniaRecordsToLegacyArray($records));
     }
 
     /**
-     * @param $record UltimaniaRecord
+     * @param UltimaniaRecord $record
      */
     public function mapRecordEventToLegacyEvent($record) {
         $this->aseco->releaseEvent(ULTI_EVENT_RECORD_LEGACY, $this->mapUltimaniaRecordToLegacyArray($record));
     }
 
     /**
-     * @param $record UltimaniaRecord
+     * @param UltimaniaRecord $record
      * @return array
      */
     private function mapUltimaniaRecordToLegacyArray($record) {
@@ -51,7 +51,7 @@ class UltimaniaLegacyAdapter {
     }
 
     /**
-     * @param $ultiRecords UltimaniaRecord[]
+     * @param UltimaniaRecord[] $ultiRecords
      * @return array
      */
     private function mapUltimaniaRecordsToLegacyArray($ultiRecords) {

@@ -21,7 +21,7 @@ class UltimaniaXasecoAdapter {
     }
 
     /**
-     * @param $message string
+     * @param string $message
      */
     public function console($message) {
         $this->aseco->console($message);
@@ -87,7 +87,6 @@ class UltimaniaXasecoAdapter {
     }
 
     /**
-     * @param $login
      * @return Player
      */
     public function getPlayerObjectFromLogin($login) {
@@ -95,52 +94,52 @@ class UltimaniaXasecoAdapter {
     }
 
     /**
-     * @param $playerUid int server's player uid
-     * @param $player Player
-     * @param $action int action id
+     * @param int $playerUid server's player uid
+     * @param Player $player
+     * @param int $action action id
      */
-    public function releaseOnPlayerManialinkPageAnswerEvent($playerUid, $player, $action) {
+    public function releaseOnPlayerManialinkPageAnswerEvent($playerUid, Player $player, $action) {
         $this->aseco->releaseEvent('onPlayerManialinkPageAnswer',  array($playerUid, $player->login, $action));
     }
 
     /**
-     * @param $name string
-     * @param $content string
+     * @param string $name
+     * @param string $content
      */
     public function releaseEvent($name, $content) {
         $this->aseco->releaseEvent($name, $content);
     }
 
     /**
-     * @param $text string
+     * @param string $text
      */
     public function formatColors($text) {
         return $this->aseco->formatColors($text);
     }
 
     /**
-     * @param $player Player
-     * @param $xml string Manialink XML
-     * @param $autohideTimeout int timeout in seconds
-     * @param $hideOnClick bool
+     * @param Player $player
+     * @param string $xml Manialink XML
+     * @param int $autohideTimeout timeout in seconds
+     * @param bool $hideOnClick
      */
     public function sendManialinkToPlayer($player, $xml, $autohideTimeout = 0, $hideOnClick = false) {
         $this->aseco->client->addCall('SendDisplayManialinkPageToLogin', array($player->login, $xml, $autohideTimeout, $hideOnClick));
     }
 
     /**
-     * @param $xml string Manialink XML
-     * @param $autohideTimeout int timeout in seconds
-     * @param $hideOnClick bool
+     * @param string $xml Manialink XML
+     * @param int $autohideTimeout timeout in seconds
+     * @param bool $hideOnClick
      */
     public function sendManialinkToEveryone($xml, $autohideTimeout = 0, $hideOnClick = false) {
         $this->aseco->client->addCall('SendDisplayManialinkPage', array($xml, $autohideTimeout, $hideOnClick));
     }
 
     /**
-     * @param $plugin string filename of the plugin?
-     * @param $author string
-     * @param $version string
+     * @param string $plugin filename of the plugin?
+     * @param string $author
+     * @param string $version
      */
     public function registerWithThirdpartyPluginsUpToDate($plugin, $author, $version) {
         $this->aseco->plugin_versions[] = array( /** @phpstan-ignore-line */

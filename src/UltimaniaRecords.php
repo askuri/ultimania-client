@@ -26,7 +26,7 @@ class UltimaniaRecords {
     }
 
     /**
-     * @param $rank int Starting at 1
+     * @param int $rank Starting at 1
      * @return UltimaniaRecord|null
      */
     public function getRecordByRank($rank) {
@@ -37,7 +37,7 @@ class UltimaniaRecords {
     }
 
     /**
-     * @param $records UltimaniaRecord[]
+     * @param UltimaniaRecord[] $records
      */
     public function setAll($records) {
         $this->recordsOrderedByScore = $records;
@@ -51,52 +51,7 @@ class UltimaniaRecords {
     }
 
     /**
-     * @param $recordInput UltimaniaRecord
-     * @return UltimaniaRecordImprovement
-     */
-    public function insertOrUpdate1($recordInput) {
-        $improvement = new UltimaniaRecordImprovement();
-        $improvement->setNewRecord($recordInput);
-
-        $hasExistingRecord = false;
-        foreach ($this->recordsOrderedByScore as $id => $existingRecord) {
-            $existingRank = $id + 1;
-            if ($existingRecord->getLogin() == $recordInput->getLogin()) {
-                $improvement->setPreviousRank($existingRank);
-                $improvement->setPreviousRecord($existingRecord);
-                $hasExistingRecord = true;
-                if ($recordInput->getScore() > $existingRecord->getScore()) {
-                    // new score is better (>) than existing score of same player
-                    $this->recordsOrderedByScore[$id] = $recordInput;
-                    if ($existingRank == 1) {
-                        // if the existingRank is already 1, it can only be secured
-                        $improvement->setType(UltimaniaRecordImprovement::TYPE_NEW);
-                    } elseif ($this->getRecordByRank($existingRank - 1)->getScore() > $recordInput->getScore()) {
-                        // there is a better record and its score is higher than the record we are processing here
-                        $improvement->setType(UltimaniaRecordImprovement::TYPE_NEW);
-                    } else {
-                        // new record is higher than the record that was previously the next better one
-                        $improvement->setType(UltimaniaRecordImprovement::TYPE_NEW_RANK);
-                    }
-                } elseif ($recordInput->getScore() == $existingRecord->getScore()) {
-                    $improvement->setType(UltimaniaRecordImprovement::TYPE_EQUAL);
-                }
-            }
-        }
-
-        // doesn't have a record yet, so we insert it at the end
-        if (!$hasExistingRecord) {
-            $this->recordsOrderedByScore[] = $recordInput;
-            $improvement->setType(UltimaniaRecordImprovement::TYPE_FIRST);
-        }
-
-        usort($this->recordsOrderedByScore, "ulti_sortRecordsDesc");
-
-        return $improvement;
-    }
-
-    /**
-     * @param $newRecord UltimaniaRecord
+     * @param UltimaniaRecord $newRecord
      * @return UltimaniaRecordImprovement
      */
     public function insertOrUpdate($newRecord) {
