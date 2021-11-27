@@ -279,8 +279,9 @@ class Ultimania {
     }
 
     private function fetchAndSetApiUrl() {
-        $this->apiUrl = trim(file_get_contents(ULTI_API_INFO . 'url.txt')) . 'TMF/' . ULTI_API_VERSION . '/index.php';
-        if (!$this->apiUrl) {
+        $rawResponse = file_get_contents(ULTI_API_INFO . 'url.txt');
+        $this->apiUrl = trim($rawResponse) . 'TMF/' . ULTI_API_VERSION . '/index.php';
+        if ($rawResponse === false || empty($this->apiUrl)) {
             trigger_error('[Ultimania] Unable to get API URL from ' . ULTI_API_INFO . 'url.txt', E_USER_WARNING);
         }
     }

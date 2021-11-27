@@ -17,7 +17,7 @@ class UltimaniaRecordImprovement {
 
     /** @var int */
     private $previousRank;
-    /** @var UltimaniaRecord */
+    /** @var null|UltimaniaRecord */
     private $previousRecord;
     /** @var int */
     private $newRank;
@@ -113,6 +113,9 @@ class UltimaniaRecordImprovement {
         $this->newRecord = $newRecord;
     }
 
+    /**
+     * @return bool
+     */
     private function hasPreviousRecord() {
         return empty($this->previousRecord);
     }
