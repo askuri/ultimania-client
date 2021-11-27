@@ -104,7 +104,7 @@ class UltimaniaXasecoAdapter {
 
     /**
      * @param string $name
-     * @param string $content
+     * @param mixed $content
      */
     public function releaseEvent($name, $content) {
         $this->aseco->releaseEvent($name, $content);

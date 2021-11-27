@@ -97,7 +97,7 @@ class Ultimania {
     }
 
     public function onEndRace1() {
-        $this->mainWindowHide(false); // Close window to all players
+        $this->mainWindowHideToEveryone();
         $this->pbWidgetHide();
     }
 
@@ -124,7 +124,7 @@ class Ultimania {
                 $this->mainWindowShow($player);
                 break;
             case ULTI_ID_PREFIX . 102:
-                $this->mainWindowHide($player);
+                $this->mainWindowHideToPlayer($player);
                 break;
             case ULTI_ID_PREFIX . 104:
                 $this->showFullRecordList($player);
@@ -136,7 +136,7 @@ class Ultimania {
                     $rank = intval(substr($actionId, strlen(ULTI_ID_PREFIX) + 1)) + 1;
 
                     $this->showUltiRankInfo($player, $rank);
-                    $this->mainWindowHide($player);
+                    $this->mainWindowHideToPlayer($player);
                 }
         }
     }
@@ -370,16 +370,16 @@ class Ultimania {
     }
 
     /**
-     * @param Player|null $player
+     * @param Player $player
      */
-    private function mainWindowHide($player) {
+    private function mainWindowHideToPlayer($player) {
         $xml = '<manialink id="ultimania_window"></manialink>';
+        $this->xasecoAdapter->sendManialinkToPlayer($player, $xml);
+    }
 
-        if ($player === null) {
-            $this->xasecoAdapter->sendManialinkToEveryone($xml);
-        } else {
-            $this->xasecoAdapter->sendManialinkToPlayer($player, $xml);
-        }
+    private function mainWindowHideToEveryone() {
+        $xml = '<manialink id="ultimania_window"></manialink>';
+        $this->xasecoAdapter->sendManialinkToEveryone($xml);
     }
 
     /**
