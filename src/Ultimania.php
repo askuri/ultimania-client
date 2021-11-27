@@ -20,7 +20,7 @@ class Ultimania {
         $this->config = $ultiConfig;
         $this->records = $ultiRecords;
         $this->xasecoAdapter = $xasecoAdapter;
-        $this->nextRefresh = time(); // do it immediately, when plugin initiated
+        $this->nextRefresh = time() + $this->config->getRefreshInterval();
     }
 
     /**************************
@@ -40,7 +40,7 @@ class Ultimania {
     }
 
     public function onPlayerFinish(Record $finish_item) {
-        if ($finish_item->score == 0) return; // reject scores with 0 points
+        if ($finish_item->score == 0) return;
 
         $improvement = $this->records->insertOrUpdate($this->mapXasecoRecordToUltiRecord($finish_item));
 

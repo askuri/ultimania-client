@@ -143,7 +143,6 @@ function ulti_onSync($aseco) {
 }
 function ulti_onNewChallenge2($aseco, $challenge_item) {
     global $ultiMainClass;
-    var_dump("ON NEW CHALLENGE");
     $ultiMainClass->onNewChallenge();
 }
 function ulti_onPlayerFinish($aseco, $finish) {
