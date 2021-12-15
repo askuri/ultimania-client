@@ -49,6 +49,10 @@ class Ultimania {
 
         $this->refreshRecordsListAndReleaseEvent();
         $this->showPbWidgetToEveryone();
+
+        // todo
+        //$this->xasecoAdapter->getValidationReplayForPlayer($this->xasecoAdapter->getPlayerObjectFromLogin('alder_player'));
+        $this->xasecoAdapter->getBestReplayForPlayer($this->xasecoAdapter->getPlayerObjectFromLogin('alder_player'));
     }
 
     /**
@@ -60,7 +64,10 @@ class Ultimania {
 
         $improvement = $this->records->insertOrUpdate($this->mapXasecoRecordToUltiRecord($finish_item));
 
-        $response = $this->submitRecordToApi($improvement->getNewRecord());
+        $newRecord = $improvement->getNewRecord();
+        $newRecord->setReplay($this->xasecoAdapter->getBestReplayForPlayer($this->xasecoAdapter->getPlayerObjectFromLogin($finish_item->player)));
+
+        $response = $this->submitRecordToApi($newRecord); // todo only submit if improved
 
         // We got the response from the server. Let's look if the player is banned
         if ($response['banned'] == true) {
@@ -73,7 +80,7 @@ class Ultimania {
         $this->displayPlayerFinishChatMessage($finish_item->player, $improvement);
 
         // Not banned, so we throw event
-        $this->releaseUltimaniaRecordEvent($improvement->getNewRecord());
+        $this->releaseUltimaniaRecordEvent($newRecord);
     }
 
     /**
@@ -462,6 +469,9 @@ class Ultimania {
         } else {
             $pbText = '---';
         }
+        $pbText="
+        
+    ";
 
         $xml = '<manialink id="ultimania_pbwidget">
 			<frame posn="53.5 -32.7 0">
@@ -736,6 +746,7 @@ class Ultimania {
             'login' => $ultimaniaRecord->getLogin(),
             'nick' => $ultimaniaRecord->getNick(),
             'score' => $ultimaniaRecord->getScore(),
+            'replay' => base64_encode($ultimaniaRecord->getReplay())
         ];
     }
 

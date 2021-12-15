@@ -168,4 +168,53 @@ class UltimaniaXasecoAdapter {
             'version' => $version
         );
     }
+
+    public function getValidationReplayForPlayer(Player $player) {
+        $this->aseco->client->query('GetValidationReplay', $player->login);
+
+        $response = $this->aseco->client->getResponse();
+        var_dump('Received replay size: '.strlen($response));
+        var_dump($this->aseco->client->getErrorMessage());
+        file_put_contents(
+            "/home/martin/PlayOnLinux's virtual drives/TMUnited/drive_c/users/martin/Documents/TrackMania/Tracks/Replays/ulti_vali.Replay.Gbx",
+            $response
+        );
+    }
+
+    public function getGhostReplayForPlayer() {
+        $this->aseco->client->query('SaveCurrentReplay', "ulti_ghost.Replay.Gbx");
+
+        $response = $this->aseco->client->getResponse();
+        var_dump('Result: '.$response);
+        var_dump($this->aseco->client->getErrorMessage());
+    }
+
+    /**
+     * @param Player $player
+     * @return string|null Replay file bytes or null on failure
+     */
+    public function getBestReplayForPlayer(Player $player) {
+        $this->aseco->client->query('SaveBestGhostsReplay',
+            $player->login,
+            "ulti_replay_temp_file__delete_me.Replay.Gbx"
+        );
+        $response = $this->aseco->client->getResponse();
+        var_dump('Result: '.$response); // todo
+
+        if ($response != "1") {
+            trigger_error('[Ultimania] Server is unable to save replay into "GameData/Tracks/Replays/". Please make sure the server has write access in this folder.', E_USER_WARNING);
+            $this->console('Server error message: ' . $this->aseco->client->getErrorMessage());
+            return null;
+        }
+
+        $replayFileName = rtrim(rtrim($this->aseco->server->gamedir, '/'), '\\') . '/Tracks/Replays/ulti_replay_temp_file__delete_me.Replay.Gbx';
+        $replayFile = file_get_contents($replayFileName);
+
+        if ($replayFile === false) {
+            trigger_error('[Ultimania] Unable to read previously saved replay from ' . $replayFileName);
+            return null;
+        }
+
+        return $replayFile;
+    }
 }

@@ -13,6 +13,9 @@ class UltimaniaRecord {
     /** @var int|null  */
     private $addTime;
 
+    /** @var string|null */
+    private $replay;
+
     /**
      * @param string $login
      * @param string $nick
@@ -69,4 +72,21 @@ class UltimaniaRecord {
     public function setAddTime($addTime) {
         $this->addTime = $addTime;
     }
+
+    /**
+     * @return string|null
+     */
+    public function getReplay() {
+        return $this->replay;
+    }
+
+    /**
+     * @param string|null $replay
+     * @return void
+     */
+    public function setReplay($replay) {
+        $this->replay = $replay;
+    }
+
+
 }
