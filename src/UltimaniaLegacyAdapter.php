@@ -1,6 +1,6 @@
 <?php
 /**
- * @deprecated
+ * @deprecated use onUltimaniaRecordsLoadedApi2 and onUltimaniaRecordApi2
  */
 class UltimaniaLegacyAdapter {
     /** @var Aseco */

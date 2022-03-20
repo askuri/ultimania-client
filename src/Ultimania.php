@@ -11,13 +11,10 @@ class Ultimania {
     private $xasecoAdapter;
 
     /** @var UltimaniaClient */
-    private $client;
+    private $ultiClient;
 
     /** @var int timestamp of when the next refresh should happen */
     private $nextRefresh;
-
-    /** @var string the actual API URL. URL is retrieved from ULTI_API_INFO URL */
-    private $apiUrl;
 
     /**
      * @param UltimaniaConfig $ultiConfig
@@ -29,7 +26,7 @@ class Ultimania {
         $this->config = $ultiConfig;
         $this->records = $ultiRecords;
         $this->xasecoAdapter = $xasecoAdapter;
-        $this->client = $client;
+        $this->ultiClient = $client;
         $this->nextRefresh = time() + $this->config->getRefreshInterval();
     }
 
@@ -50,10 +47,7 @@ class Ultimania {
      * @return void
      */
     public function onNewChallenge($map) {
-        // regularly check if there's a new API URL
-        $this->fetchAndSetApiUrl();
-
-        $this->client->registerMap($map);
+        $this->ultiClient->registerOrUpdateMap($map);
         $this->refreshRecordsListAndReleaseEvent();
         $this->showPbWidgetToEveryone();
     }
@@ -65,9 +59,11 @@ class Ultimania {
     public function onPlayerFinish(Record $finish_item) {
         if ($finish_item->score == 0) return;
 
-        $improvement = $this->records->insertOrUpdate(
-            $this->mapXasecoRecordToUltiRecord($finish_item),
-            $finish_item->challenge->uid,
+        $ultiRecord = $this->mapXasecoRecordToUltiRecord($finish_item);
+        $ultiRecord->setAddTime(time());
+
+        $improvement = $this->records->saveRecord(
+            $ultiRecord,
             $this->xasecoAdapter->getBestReplayForPlayer($finish_item->player)
         );
 
@@ -75,7 +71,6 @@ class Ultimania {
 
         $this->displayPlayerFinishChatMessage($finish_item->player, $improvement);
 
-        // Not banned, so we release event
         $this->releaseUltimaniaRecordEvent($newRecord);
     }
 
@@ -84,24 +79,10 @@ class Ultimania {
      * @return void
      */
     public function onPlayerConnect(Player $player) {
-        $playerFromApi = $this->client->registerPlayer($player);
+        $playerFromApi = $this->ultiClient->registerOrUpdatePlayer($player);
 
         if ($playerFromApi->isBanned()) {
-            // display information window for the banned player
-            $header = 'Ultimania global record database information:';
-            $data = array();
-            $data[] = array('$f00You\'re banned from the global records database Ultimania!');
-            $data[] = array('');
-            $data[] = array('This means:');
-            $data[] = array('- You can\'t drive records anymore');
-            $data[] = array('- You will always see this window on server join');
-            $data[] = array('');
-            $data[] = array('You can be unbanned by writing an apology for whatever you\'ve done');
-            $data[] = array('(cheating, hacking, ...) to enwi2@t-online.de (the e-mail of the owner of Ultimania, Askuri).');
-            $data[] = array('If Askuri thinks you regret whatever you did, he\'ll unban you.');
-            $data[] = array('');
-            $data[] = array('Best regards');
-            display_manialink($player->login, $header, array('Icons64x64_1', 'TrackInfo', -0.01), $data, array(1.1), 'OK');
+            $this->showBannedPlayerInfoWindow($player);
         }
 
         // Remove Dedimania PB widget in bottom-right corner
@@ -120,7 +101,7 @@ class Ultimania {
     /**
      * @return void
      */
-    public function onEndRace1() {
+    public function onEndRace() {
         $this->mainWindowHideToEveryone();
         $this->pbWidgetHide();
     }
@@ -181,18 +162,16 @@ class Ultimania {
 
     /**
      * @param Player $author
-     * @param string $params
+     * @param string $rank starting at 1
      * @return void
      */
-    public function onChatUltiRankInfo(Player $author, $params) {
-        if (!is_numeric($params)) {
+    public function onChatUltiRankInfo(Player $author, $rank) {
+        if (!is_numeric($rank)) {
             $this->xasecoAdapter->chatSendServerMessageToPlayer('$ff0> $f00Usage: $bbb/ultirankinfo ranknumber$f00  (e.g. $bbb/ultirankinfo 1$f00)', $author);
             return;
         }
 
-        $rank = $params - 1;
-
-        $this->showUltiRankInfo($author, $rank);
+        $this->showUltiRankInfo($author, (int) $rank);
     }
 
     /**
@@ -209,7 +188,7 @@ class Ultimania {
      */
     public function onChatUltiUpdate(Player $author) {
         if ($this->xasecoAdapter->isMasterAdmin($author)) {
-            $newest = $this->fetchNewestAvailableUltimaniaClientVersion();
+            $newest = $this->ultiClient->fetchNewestAvailableUltimaniaClientVersion();
             if (version_compare(ULTI_VERSION, $newest) == -1) {
                 $content = file_get_contents(ULTI_API_INFO . 'tmf/versions/' . $newest . '.php_');
 
@@ -235,108 +214,6 @@ class Ultimania {
      **************************/
 
     /*************************************
-     * BEGIN METHODS FOR API COMMUNICATION
-     */
-
-    /**
-     * @param string $action
-     * @param array{string?: int|string} $params
-     * @return mixed
-     */
-    private function sendRequest($action, $params = []) {
-        // why is this here? why did i do this many years ago?
-        if (!$this->xasecoAdapter->getCurrentChallengeObject()->uid) {
-            trigger_error('[Ultimania] Error: trying to send request to server without a valid track UID. Action: '. $action, E_USER_ERROR);
-        }
-
-        $params_predefined = [ // These are send on all requests
-            'action' => $action,
-            'uid' => $this->xasecoAdapter->getCurrentChallengeObject()->uid,
-            'mapname' => $this->xasecoAdapter->getCurrentChallengeObject()->name,
-            'stunt' => 1,
-            'server' => $this->xasecoAdapter->getServerObject()->serverlogin,
-            'servername' => $this->xasecoAdapter->getServerObject()->nickname
-        ];
-
-        $merged_params = array_merge($params, $params_predefined);
-
-        $ch = curl_init();
-
-        curl_setopt($ch, CURLOPT_URL, $this->apiUrl);
-        curl_setopt($ch, CURLOPT_USERAGENT, 'TMF\Xaseco' . XASECO_VERSION . '\Ultimania' . ULTI_VERSION . '\API' . ULTI_API_VERSION);
-        curl_setopt($ch, CURLOPT_HEADER, false);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $merged_params);
-        curl_setopt($ch, CURLOPT_TIMEOUT, $this->config->getConnectTimeout());
-        curl_setopt($ch, CURLOPT_LOW_SPEED_TIME, $this->config->getRequestTimeout());
-
-        $responseJson = curl_exec($ch);
-        curl_close($ch);
-
-        $response = json_decode($responseJson, true);
-
-        if ($response === null && !empty($responseJson)) {
-            trigger_error('[Ultimania] Could not json_decode API response! Please report this to enwi2@t-online.de! Raw result:', E_USER_WARNING);
-            $this->xasecoAdapter->console($responseJson);
-        }
-
-        if (!empty($response['error'])) {
-            trigger_error('[Ultimania] Error occurred on action ' . $action . ': ' . $response['error'], E_USER_WARNING);
-        }
-
-        return $response;
-    }
-
-    /**
-     * @return mixed
-     */
-    private function fetchBannedPlayers() {
-        return $this->sendRequest('getbannedplayers');
-    }
-
-    /**
-     * @return false|string
-     */
-    private function fetchNewestAvailableUltimaniaClientVersion() {
-        $versionRaw = file_get_contents(ULTI_API_INFO . 'tmf/version.txt');
-
-        if ($versionRaw === false) {
-            trigger_error('[Ultimania] Unable to get current version information form ' . ULTI_API_INFO, E_USER_WARNING);
-            return false;
-        }
-        return trim($versionRaw);
-    }
-
-    /**
-     * @return false|string
-     */
-    private function fetchWelcomeWindowInfo() {
-        $info = file_get_contents(ULTI_API_INFO . 'tmf/description_window.txt');
-
-        if ($info === false) {
-            trigger_error('[Ultimania] Unable to get window infobox content from ' . ULTI_API_INFO, E_USER_WARNING);
-            return false;
-        }
-        return $info;
-    }
-
-    /**
-     * @return void
-     */
-    private function fetchAndSetApiUrl() {
-        $rawResponse = file_get_contents(ULTI_API_INFO . 'url.txt');
-        $this->apiUrl = trim($rawResponse) . 'TMF/' . ULTI_API_VERSION . '/index.php';
-        if ($rawResponse === false || empty($this->apiUrl)) {
-            trigger_error('[Ultimania] Unable to get API URL from ' . ULTI_API_INFO . 'url.txt', E_USER_WARNING);
-        }
-    }
-
-    /**
-     * END METHODS FOR API COMMUNICATION
-     *************************************/
-
-    /*************************************
      * BEGIN MANIALINKS
      */
 
@@ -344,7 +221,7 @@ class Ultimania {
      * @return void
      */
     private function mainWindowShow(Player $player) {
-        $ultinfo = $this->fetchWelcomeWindowInfo();
+        $ultinfo = $this->ultiClient->fetchInfotextInMainWindow();
 
         $xml = '<manialink id="ultimania_window">
 			
@@ -370,7 +247,7 @@ class Ultimania {
         $xml .= '<frame posn="-38.5 26.5 1">';
 
         if ($this->records->isEmpty()) {
-            $xml .= '<label posn="2 -5 1" text="$oCurrently' . CRLF . 'no records :(" textsize="2" />';
+            $xml .= '<label posn="1.8 -3 1" text="$oCurrently no records" textsize="2" />';
         } else {
             $x = 0;
             $y = -3;
@@ -397,7 +274,7 @@ class Ultimania {
                 }
 
                 $xml .= '<label posn="' . ($x + 4) . ' ' . $y . ' 1" text="' . $record->getScore() . '" textsize="1" />';
-                $xml .= '<label posn="' . ($x + 8) . ' ' . $y . ' 1" text="' . $this->handleSpecialChars($record->getNick()) . '" sizen="12 2" textsize="1" />';
+                $xml .= '<label posn="' . ($x + 8) . ' ' . $y . ' 1" text="' . $this->handleSpecialChars($record->getPlayer()->getNick()) . '" sizen="12 2" textsize="1" />';
                 $xml .= '<label posn="' . ($x + 21) . ' ' . $y . ' 1" text="' . $record->getPlayer()->getLogin() . '" sizen="13 2" textsize="1" />';
 
                 if ($record->getPlayer()->getLogin() == $player->login) {
@@ -529,6 +406,27 @@ class Ultimania {
 
         // display ManiaLink message
         display_manialink_multi($showToPlayer);
+    }
+
+    /**
+     * @param Player $player
+     * @return void
+     */
+    private function showBannedPlayerInfoWindow(Player $player) {
+        $header = 'Ultimania global record database information:';
+        $data = array();
+        $data[] = array('$f00You\'re banned from the global records database Ultimania!');
+        $data[] = array('');
+        $data[] = array('This means:');
+        $data[] = array('- You can\'t drive records anymore');
+        $data[] = array('- You will always see this window on server join');
+        $data[] = array('');
+        $data[] = array('You can be unbanned by writing an apology for whatever you\'ve done');
+        $data[] = array('(cheating, hacking, ...) to enwi2@t-online.de (the e-mail of the owner of Ultimania, Askuri).');
+        $data[] = array('If Askuri thinks you regret whatever you did, he\'ll unban you.');
+        $data[] = array('');
+        $data[] = array('Best regards');
+        display_manialink($player->login, $header, array('Icons64x64_1', 'TrackInfo', -0.01), $data, array(1.1), 'OK');
     }
 
     /**
@@ -705,7 +603,7 @@ class Ultimania {
         return new UltimaniaRecord(
             $this->mapXasecoPlayerToUltiPlayer($xasecoRecord->player),
             $xasecoRecord->challenge->uid,
-            $xasecoRecord->score
+            $xasecoRecord->score,
         );
     }
 
@@ -726,7 +624,7 @@ class Ultimania {
             $this->pbWidgetShow($p, $recordsByLogin[$p->login]);
         }
     }
-    
+
     /**
      * END HELPER METHODS
      ********************/

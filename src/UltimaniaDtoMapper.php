@@ -6,18 +6,18 @@ class UltimaniaDtoMapper {
      * @param array{'player': array{"login": string, "nick": "string"}, "nick": string, "score": int, "updated_at": int}[]|null $dtos
      * @return UltimaniaRecord[]
      */
-    public function mapApiRecordDtosToUltiRecords($dtos) {
+    public function mapRecordDtosToUltiRecords($dtos) {
         if (empty($dtos)) {
             return [];
         }
-        return array_map('self::mapApiRecordWithPlayerDtoToUltiRecord', $dtos);
+        return array_map('self::mapRecordDtoWithPlayerDtoToUltiRecord', $dtos);
     }
 
     /**
      * @param array{'player': array{"login": string, "nick": "string", "allow_replay_download": bool, "banned": bool}, "id": string|null, "map_uid": string, "score": int, "updated_at": int} $dto
      * @return UltimaniaRecord
      */
-    public function mapApiRecordWithPlayerDtoToUltiRecord($dto) {
+    public function mapRecordDtoWithPlayerDtoToUltiRecord($dto) {
         return new UltimaniaRecord(
             $this->mapPlayerDtoToUltimaniaPlayer($dto['player']),
             $dto['map_uid'],
@@ -31,7 +31,7 @@ class UltimaniaDtoMapper {
      * @param array{'player_login': string, 'map_uid': string, "id": string|null, "score": int, "updated_at": int} $dto
      * @return UltimaniaRecord
      */
-    public function mapApiRecordDtoToUltiRecord($dto) {
+    public function mapRecordDtoToUltiRecord($dto) {
         return new UltimaniaRecord(
             $dto['player_login'],
             $dto['map_uid'],
@@ -46,7 +46,7 @@ class UltimaniaDtoMapper {
      * @param string $mapUid
      * @return array{'player_login': string, "map_uid": string, "score": int}
      */
-    public function mapUltiRecordToApiRecordDto(UltimaniaRecord $ultimaniaRecord, $mapUid) {
+    public function mapUltiRecordToRecordDto(UltimaniaRecord $ultimaniaRecord, $mapUid) {
         return [
             'player_login' => $ultimaniaRecord->getPlayer()->getLogin(),
             'map_uid' => $mapUid,

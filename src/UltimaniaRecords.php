@@ -65,15 +65,14 @@ class UltimaniaRecords {
 
     /**
      * @param UltimaniaRecord $newRecord
-     * @param string $mapUid
      * @param string $replayContent
      * @return UltimaniaRecordImprovement
      */
-    public function insertOrUpdate($newRecord, $mapUid, $replayContent) {
+    public function saveRecord($newRecord, $replayContent) {
         $improvement = $this->localInsertOrUpdate($newRecord);
 
         if ($improvement->getType() != UltimaniaRecordImprovement::TYPE_NO_IMPROVEMENT) {
-            $savedRecord = $this->ultiClient->submitRecord($newRecord, $mapUid);
+            $savedRecord = $this->ultiClient->submitRecord($newRecord, $newRecord->getMapUid());
             $this->getRecordByLogin($newRecord->getPlayer()->getLogin())->setId($savedRecord->getId());
             $this->ultiClient->submitReplay($savedRecord->getId(), $replayContent);
         }
@@ -137,7 +136,22 @@ class UltimaniaRecords {
         } else {
             $this->recordsOrderedByScore[] = $newRecord;
         }
-        usort($this->recordsOrderedByScore, "ulti_sortRecordsDesc");
+        usort($this->recordsOrderedByScore, "self::sortRecordsDescCallback");
+    }
+
+    /**
+     * usort callback for records.
+     * Use with usort($array, 'ulti_sortRecordsDesc')
+     * @param UltimaniaRecord $a
+     * @param UltimaniaRecord $b
+     * @return int
+     */
+    function sortRecordsDescCallback(UltimaniaRecord $a, UltimaniaRecord $b) {
+        if ($a->getScore() == $b->getScore()) {
+            return 0;
+        }
+
+        return ($a->getScore() > $b->getScore()) ? -1 : 1;
     }
 
     /**

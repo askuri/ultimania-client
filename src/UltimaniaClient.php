@@ -26,7 +26,7 @@ class UltimaniaClient {
      * @return UltimaniaRecord[]
      */
     public function getRecords($mapUid, $limit = null) {
-        return $this->dtoMapper->mapApiRecordDtosToUltiRecords(
+        return $this->dtoMapper->mapRecordDtosToUltiRecords(
             $this->doRequest('GET',
                 'maps/' . $mapUid . '/records', ['limit' => $limit]
             )['response']
@@ -50,17 +50,17 @@ class UltimaniaClient {
         $response = $this->doRequest(
             'PUT',
             'records',
-            $this->dtoMapper->mapUltiRecordToApiRecordDto($record, $mapUid)
+            $this->dtoMapper->mapUltiRecordToRecordDto($record, $mapUid)
         )['response'];
 
-        return $response == null ? null : $this->dtoMapper->mapApiRecordDtoToUltiRecord($response);
+        return $response == null ? null : $this->dtoMapper->mapRecordDtoToUltiRecord($response);
     }
 
     /**
      * @param Player $player
      * @return UltimaniaPlayer
      */
-    public function registerPlayer($player) {
+    public function registerOrUpdatePlayer($player) {
         return $this->dtoMapper->mapPlayerDtoToUltimaniaPlayer(
             $this->doRequest(
                 'PUT',
@@ -74,7 +74,7 @@ class UltimaniaClient {
      * @param Challenge $map
      * @return void
      */
-    public function registerMap($map) {
+    public function registerOrUpdateMap($map) {
         $this->doRequest(
             'PUT',
             'maps',
@@ -129,5 +129,31 @@ class UltimaniaClient {
             'response' => $jsonDecodedResponse,
             'httpcode' => $httpStatus,
         ];
+    }
+
+    /**
+     * @return false|string
+     */
+    public function fetchNewestAvailableUltimaniaClientVersion() {
+        $versionRaw = file_get_contents(ULTI_API_INFO . 'tmf/version.txt');
+
+        if ($versionRaw === false) {
+            trigger_error('[Ultimania] Unable to get current version information form ' . ULTI_API_INFO, E_USER_WARNING);
+            return false;
+        }
+        return trim($versionRaw);
+    }
+
+    /**
+     * @return false|string
+     */
+    public function fetchInfotextInMainWindow() {
+        $info = file_get_contents(ULTI_API_INFO . 'tmf/description_window.txt');
+
+        if ($info === false) {
+            trigger_error('[Ultimania] Unable to get window infobox content from ' . ULTI_API_INFO, E_USER_WARNING);
+            return false;
+        }
+        return $info;
     }
 }

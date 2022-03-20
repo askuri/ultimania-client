@@ -1,13 +1,14 @@
 <?php
 
+/**
+ * Abstraction layer between Ultimania and the global galactic $aseco object.
+ * All communication with Xaseco or the dedicated server should go through here.
+ */
 class UltimaniaXasecoAdapter {
 
     /** @var Aseco */
     private $aseco;
 
-    /**
-     *
-     */
     public function __construct() {
         global $aseco;
 

@@ -3,6 +3,9 @@
 /**
  * Represents a change (or no change) of a players
  * record between two points in time.
+ *
+ * previous = as was saved before player finished
+ * new = result of what he just finished, may be worse than previous
  */
 class UltimaniaRecordImprovement {
     const TYPE_NO_IMPROVEMENT = 'NO_IMPROVEMENT';
@@ -11,9 +14,6 @@ class UltimaniaRecordImprovement {
     const TYPE_NEW_RANK = 'NEW_RANK'; // gained
     const TYPE_FIRST = 'FIRST';
     const TYPE_UNKNOWN = 'UNKNOWN';
-
-    // previous = as was saved before player finished
-    // new = result of what he just finished, may be worse than previous
 
     /** @var int */
     private $previousRank;

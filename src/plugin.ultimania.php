@@ -65,7 +65,7 @@ Aseco::addChatCommand('ultiwindow', 'Shows informations about the current map', 
 Aseco::addChatCommand('ultiupdate', 'Updates Ultimania', false); /** @phpstan-ignore-line */
 Aseco::addChatCommand('ultilist', 'Shows all records', false); /** @phpstan-ignore-line */
 
-const ULTI_VERSION      = '1.4.0';
+const ULTI_VERSION      = '2.0.0';
 const ULTI_API_VERSION  = '5'; // DO NOT CHANGE!!! You may get strange or outdated results so keep it as is
 const ULTI_API_INFO     = 'http://askuri.de/ultimania/'; // This URL is permanent. It will (ok, should) never change and defines the real home of the API
 const ULTI_ID_PREFIX = 5450; // Change this if unexpected things happen when clicking something
@@ -92,7 +92,11 @@ require 'UltimaniaPlayer.php';
 require 'UltimaniaLegacyAdapter.php';
 require 'UltimaniaXasecoAdapter.php';
 
-
+/*
+ * @ plugin authors: don't access these objects directly.
+ * Use the events onUltimaniaRecordsLoadedApi2 and onUltimaniaRecordApi2 instead.
+ * I don't guarantee not to break the interface.
+ */
 $ultiConfig = UltimaniaConfig::instantiateFromFile('ultimania.xml');
 
 $ultiDtoMapper = new UltimaniaDtoMapper();
@@ -101,22 +105,8 @@ $ultiRecords = new UltimaniaRecords($ultiClient);
 $ultiXasecoAdapter = new UltimaniaXasecoAdapter();
 $ultiMainClass = new Ultimania($ultiConfig, $ultiRecords, $ultiXasecoAdapter, $ultiClient);
 
+// deprecated! Use onUltimaniaRecordsLoadedApi2 and onUltimaniaRecordApi2 instead
 $ulti = new UltimaniaLegacyAdapter($ultiConfig, $ultiRecords);
-
-/**
- * usort callback for records.
- * Use with usort($array, 'ulti_sortRecordsDesc')
- * @param UltimaniaRecord $a
- * @param UltimaniaRecord $b
- * @return int
- */
-function ulti_sortRecordsDesc(UltimaniaRecord $a, UltimaniaRecord $b) {
-    if ($a->getScore() == $b->getScore()) {
-        return 0;
-    }
-
-    return ($a->getScore() > $b->getScore()) ? -1 : 1;
-}
 
 /**
  * Chatcommands
@@ -166,7 +156,7 @@ function ulti_onPlayerConnect($aseco, $player) { /** @phpstan-ignore-line */
 }
 function ulti_onEndRace1($aseco, $race) { /** @phpstan-ignore-line */
     global $ultiMainClass;
-    $ultiMainClass->onEndRace1();
+    $ultiMainClass->onEndRace();
 }
 function ulti_onEverySecond($aseco) { /** @phpstan-ignore-line */
     global $ultiMainClass;

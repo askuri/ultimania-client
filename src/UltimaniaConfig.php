@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * @todo keep the xml file? do we need it?
+ */
 class UltimaniaConfig {
     /** @var int */
     private $refresh_interval = 180;
