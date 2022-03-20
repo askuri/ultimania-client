@@ -55,6 +55,6 @@ class UltimaniaRecordImprovementTest extends TestCase {
     }
 
     private function buildRecordWithScore($score) {
-        return new UltimaniaRecord('login', 'nick', $score);
+        return new UltimaniaRecord('login', 'map_uid', $score);
     }
 }

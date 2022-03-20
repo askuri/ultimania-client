@@ -398,9 +398,9 @@ class Ultimania {
 
                 $xml .= '<label posn="' . ($x + 4) . ' ' . $y . ' 1" text="' . $record->getScore() . '" textsize="1" />';
                 $xml .= '<label posn="' . ($x + 8) . ' ' . $y . ' 1" text="' . $this->handleSpecialChars($record->getNick()) . '" sizen="12 2" textsize="1" />';
-                $xml .= '<label posn="' . ($x + 21) . ' ' . $y . ' 1" text="' . $record->getLogin() . '" sizen="13 2" textsize="1" />';
+                $xml .= '<label posn="' . ($x + 21) . ' ' . $y . ' 1" text="' . $record->getPlayer()->getLogin() . '" sizen="13 2" textsize="1" />';
 
-                if ($record->getLogin() == $player->login) {
+                if ($record->getPlayer()->getLogin() == $player->login) {
                     $xml .= '<quad posn="' . ($x + 0.7) . ' ' . ($y + 0.2) . ' 0.5" sizen="35 2" style="BgsPlayerCard" substyle="ProgressBar" />';
                 }
 
@@ -486,7 +486,7 @@ class Ultimania {
         $page = 1;
         foreach ($this->records->getAll() as $id => $record) {
             $time = $this->timestampToDateTimeStringOrGery($record->getAddTime());
-            $row = array($id + 1, $record->getScore(), $record->getNick(), $record->getLogin(), $time);
+            $row = array($id + 1, $record->getScore(), $record->getPlayer()->getNick(), $record->getPlayer()->getLogin(), $time);
 
             $player->msgs[$page][] = $row;
 
@@ -521,10 +521,10 @@ class Ultimania {
         );
 
         $showToPlayer->msgs[] = array(array('Score', '$FFC' . $record->getScore() . ' Points'),
-            array('Login', '$FFC' . $record->getLogin()),
-            array('Nickname', '$FFC' . $record->getNick()),
+            array('Login', '$FFC' . $record->getPlayer()->getLogin()),
+            array('Nickname', '$FFC' . $record->getPlayer()->getNick()),
             array('Recorded on', '$FFC' . $dateTimeStringOrGery),
-            array('$h[ulti:admin_rec?uid=' . $this->xasecoAdapter->getCurrentChallengeObject()->uid . '&login=' . $record->getLogin() . ']Admin')
+            array('$h[ulti:admin_rec?uid=' . $this->xasecoAdapter->getCurrentChallengeObject()->uid . '&login=' . $record->getPlayer()->getLogin() . ']Admin')
         );
 
         // display ManiaLink message
@@ -703,10 +703,18 @@ class Ultimania {
      */
     private function mapXasecoRecordToUltiRecord(Record $xasecoRecord) {
         return new UltimaniaRecord(
-            $xasecoRecord->player->login,
-            $xasecoRecord->player->nickname,
+            $this->mapXasecoPlayerToUltiPlayer($xasecoRecord->player),
+            $xasecoRecord->challenge->uid,
             $xasecoRecord->score
         );
+    }
+
+    /**
+     * @param Player $xasecoPlayer
+     * @return UltimaniaPlayer
+     */
+    private function mapXasecoPlayerToUltiPlayer(Player $xasecoPlayer) {
+        return new UltimaniaPlayer($xasecoPlayer->login, $xasecoPlayer->nickname);
     }
 
     /**

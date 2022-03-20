@@ -74,7 +74,7 @@ class UltimaniaRecords {
 
         if ($improvement->getType() != UltimaniaRecordImprovement::TYPE_NO_IMPROVEMENT) {
             $savedRecord = $this->ultiClient->submitRecord($newRecord, $mapUid);
-            $this->getRecordByLogin($newRecord->getLogin())->setId($savedRecord->getId());
+            $this->getRecordByLogin($newRecord->getPlayer()->getLogin())->setId($savedRecord->getId());
             $this->ultiClient->submitReplay($savedRecord->getId(), $replayContent);
         }
 
@@ -87,7 +87,7 @@ class UltimaniaRecords {
     public function getRecordsIndexedByLogin() {
         $indexedByLogin = [];
         foreach ($this->recordsOrderedByScore as $record) {
-            $indexedByLogin[$record->getLogin()] = $record;
+            $indexedByLogin[$record->getPlayer()->getLogin()] = $record;
         }
         return $indexedByLogin;
     }
@@ -111,15 +111,15 @@ class UltimaniaRecords {
     private function localInsertOrUpdate($newRecord) {
         $improvement = new UltimaniaRecordImprovement();
 
-        $referenceToPreviousRecord = $this->getRecordByLogin($newRecord->getLogin());
+        $referenceToPreviousRecord = $this->getRecordByLogin($newRecord->getPlayer()->getLogin());
 
         $improvement->setPreviousRecord($this->cloneIfIsObject($referenceToPreviousRecord));
-        $improvement->setPreviousRank($this->getRankByLogin($newRecord->getLogin()));
+        $improvement->setPreviousRank($this->getRankByLogin($newRecord->getPlayer()->getLogin()));
 
         $this->updateScoreOfRecordIfImprovedOrInsert($referenceToPreviousRecord, $newRecord);
 
         $improvement->setNewRecord($newRecord);
-        $improvement->setNewRank($this->getRankByLogin($newRecord->getLogin()));
+        $improvement->setNewRank($this->getRankByLogin($newRecord->getPlayer()->getLogin()));
 
         return $improvement;
     }
@@ -147,7 +147,7 @@ class UltimaniaRecords {
      */
     private function getRankByLogin($login) {
         foreach ($this->getAll() as $i => $record) {
-            if ($record->getLogin() === $login) {
+            if ($record->getPlayer()->getLogin() === $login) {
                 return $i + 1;
             }
         }

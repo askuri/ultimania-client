@@ -14,13 +14,13 @@ class UltimaniaDtoMapper {
     }
 
     /**
-     * @param array{'player': array{"login": string, "nick": "string"}, "id": string|null, "score": int, "updated_at": int} $dto
+     * @param array{'player': array{"login": string, "nick": "string", "allow_replay_download": bool, "banned": bool}, "id": string|null, "map_uid": string, "score": int, "updated_at": int} $dto
      * @return UltimaniaRecord
      */
     public function mapApiRecordWithPlayerDtoToUltiRecord($dto) {
         return new UltimaniaRecord(
-            $dto['player']['login'],
-            $dto['player']['nick'],
+            $this->mapPlayerDtoToUltimaniaPlayer($dto['player']),
+            $dto['map_uid'],
             $dto['score'],
             $dto['updated_at'],
             $dto['id']
@@ -28,13 +28,13 @@ class UltimaniaDtoMapper {
     }
 
     /**
-     * @param array{'player_login': string, "id": string|null, "score": int, "updated_at": int} $dto
+     * @param array{'player_login': string, 'map_uid': string, "id": string|null, "score": int, "updated_at": int} $dto
      * @return UltimaniaRecord
      */
     public function mapApiRecordDtoToUltiRecord($dto) {
         return new UltimaniaRecord(
             $dto['player_login'],
-            'remove me', // todo remove
+            $dto['map_uid'],
             $dto['score'],
             $dto['updated_at'],
             $dto['id']
@@ -48,7 +48,7 @@ class UltimaniaDtoMapper {
      */
     public function mapUltiRecordToApiRecordDto(UltimaniaRecord $ultimaniaRecord, $mapUid) {
         return [
-            'player_login' => $ultimaniaRecord->getLogin(),
+            'player_login' => $ultimaniaRecord->getPlayer()->getLogin(),
             'map_uid' => $mapUid,
             'score' => $ultimaniaRecord->getScore()
         ];
@@ -77,13 +77,14 @@ class UltimaniaDtoMapper {
     }
 
     /**
-     * @param array{'login': string, 'nick': string, 'banned': bool} $playerDto
+     * @param array{'login': string, 'nick': string, 'allow_replay_download': bool, 'banned': bool} $playerDto
      * @return UltimaniaPlayer
      */
     public function mapPlayerDtoToUltimaniaPlayer($playerDto) {
         return new UltimaniaPlayer(
             $playerDto['login'],
             $playerDto['nick'],
+            $playerDto['allow_replay_download'],
             $playerDto['banned']
         );
     }

@@ -8,17 +8,22 @@ class UltimaniaPlayer {
     /** @var string */
     private $nick;
 
-    /** @var bool */
+    /** @var bool|null */
+    private $allowReplayDownload;
+
+    /** @var bool|null */
     private $banned;
 
     /**
      * @param string $login
      * @param string $nick
-     * @param bool $banned
+     * @param bool|null $allowReplayDownload
+     * @param bool|null $banned
      */
-    public function __construct($login, $nick, $banned) {
+    public function __construct($login, $nick, $allowReplayDownload = null, $banned = null) {
         $this->login = $login;
         $this->nick = $nick;
+        $this->allowReplayDownload = $allowReplayDownload;
         $this->banned = $banned;
     }
 
@@ -37,7 +42,14 @@ class UltimaniaPlayer {
     }
 
     /**
-     * @return bool
+     * @return bool|null
+     */
+    public function isAllowReplayDownload() {
+        return $this->allowReplayDownload;
+    }
+
+    /**
+     * @return bool|null
      */
     public function isBanned() {
         return $this->banned;

@@ -54,8 +54,8 @@ class UltimaniaLegacyAdapter {
      */
     private function mapUltimaniaRecordToLegacyArray(UltimaniaRecord $record) {
         return [
-            'login' => $record->getLogin(),
-            'nick' => $record->getNick(),
+            'login' => $record->getPlayer()->getLogin(),
+            'nick' => $record->getPlayer()->getNick(),
             'score' => $record->getScore(),
         ];
     }

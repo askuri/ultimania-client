@@ -5,14 +5,14 @@ class UltimaniaRecord {
     /** @var string|null */
     private $id;
 
-    /** @var string */
-    private $login; // todo rename to player_login
+    /** @var UltimaniaPlayer|null null if object constructed with login only */
+    private $player;
+
+    /** @var string|null null if object constructed with a full player object */
+    private $playerLogin;
 
     /** @var string */
-    private $map_uid;
-
-    /** @var string @deprecated */
-    private $nick; // todo remove
+    private $mapUid;
 
     /** @var int */
     private $score;
@@ -24,15 +24,19 @@ class UltimaniaRecord {
     private $replay; // todo remove?
 
     /**
-     * @param string $login
-     * @param string $nick
+     * @param UltimaniaPlayer|string $player if string, only set the login
+     * @param string $mapUid
      * @param int $score
      * @param int|null $addTime
      * @param string|null $id
      */
-    public function __construct($login, $nick, $score, $addTime = null, $id = null) {
-        $this->login = $login;
-        $this->nick = $nick;
+    public function __construct($player, $mapUid, $score, $addTime = null, $id = null) {
+        if (is_string($player)) {
+            $this->playerLogin = $player;
+        } else {
+            $this->player = $player;
+        }
+        $this->mapUid = $mapUid;
         $this->score = $score;
         $this->addTime = $addTime;
         $this->id = $id;
@@ -54,24 +58,24 @@ class UltimaniaRecord {
     }
 
     /**
-     * @return string
+     * @return UltimaniaPlayer|null
      */
-    public function getLogin() {
-        return $this->login;
+    public function getPlayer() {
+        return $this->player;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getPlayerLogin() {
+        return $this->playerLogin;
     }
 
     /**
      * @return string
      */
     public function getMapUid() {
-        return $this->map_uid;
-    }
-
-    /**
-     * @return string
-     */
-    public function getNick() {
-        return $this->nick;
+        return $this->mapUid;
     }
 
     /**
