@@ -10,6 +10,9 @@ class Ultimania {
     /** @var UltimaniaXasecoAdapter */
     private $xasecoAdapter;
 
+    /** @var UltimaniaClient */
+    private $client;
+
     /** @var int timestamp of when the next refresh should happen */
     private $nextRefresh;
 
@@ -20,11 +23,13 @@ class Ultimania {
      * @param UltimaniaConfig $ultiConfig
      * @param UltimaniaRecords $ultiRecords
      * @param UltimaniaXasecoAdapter $xasecoAdapter
+     * @param UltimaniaClient $client
      */
-    public function __construct($ultiConfig, $ultiRecords, $xasecoAdapter) {
+    public function __construct($ultiConfig, $ultiRecords, $xasecoAdapter, $client) {
         $this->config = $ultiConfig;
         $this->records = $ultiRecords;
         $this->xasecoAdapter = $xasecoAdapter;
+        $this->client = $client;
         $this->nextRefresh = time() + $this->config->getRefreshInterval();
     }
 
@@ -41,18 +46,16 @@ class Ultimania {
     }
 
     /**
+     * @param Challenge $map
      * @return void
      */
-    public function onNewChallenge() {
+    public function onNewChallenge($map) {
         // regularly check if there's a new API URL
         $this->fetchAndSetApiUrl();
 
+        $this->client->registerMap($map);
         $this->refreshRecordsListAndReleaseEvent();
         $this->showPbWidgetToEveryone();
-
-        // todo
-        //$this->xasecoAdapter->getValidationReplayForPlayer($this->xasecoAdapter->getPlayerObjectFromLogin('alder_player'));
-        $this->xasecoAdapter->getBestReplayForPlayer($this->xasecoAdapter->getPlayerObjectFromLogin('alder_player'));
     }
 
     /**
@@ -62,24 +65,17 @@ class Ultimania {
     public function onPlayerFinish(Record $finish_item) {
         if ($finish_item->score == 0) return;
 
-        $improvement = $this->records->insertOrUpdate($this->mapXasecoRecordToUltiRecord($finish_item));
+        $improvement = $this->records->insertOrUpdate(
+            $this->mapXasecoRecordToUltiRecord($finish_item),
+            $finish_item->challenge->uid,
+            $this->xasecoAdapter->getBestReplayForPlayer($finish_item->player)
+        );
 
         $newRecord = $improvement->getNewRecord();
-        $newRecord->setReplay($this->xasecoAdapter->getBestReplayForPlayer($this->xasecoAdapter->getPlayerObjectFromLogin($finish_item->player)));
-
-        $response = $this->submitRecordToApi($newRecord); // todo only submit if improved
-
-        // We got the response from the server. Let's look if the player is banned
-        if ($response['banned'] == true) {
-            // Banned, so we punish him with this spam messages every finish
-            $message = ('$f00Your Records won\'t be saved on Ultimania because you\'re banned (Reason: ' . $response['reason'] . ')');
-            $this->xasecoAdapter->chatSendServerMessageToPlayer($message, $finish_item->player);
-            return;
-        }
 
         $this->displayPlayerFinishChatMessage($finish_item->player, $improvement);
 
-        // Not banned, so we throw event
+        // Not banned, so we release event
         $this->releaseUltimaniaRecordEvent($newRecord);
     }
 
@@ -88,26 +84,24 @@ class Ultimania {
      * @return void
      */
     public function onPlayerConnect(Player $player) {
-        $banned_players = $this->fetchBannedPlayers();
+        $playerFromApi = $this->client->registerPlayer($player);
 
-        foreach ($banned_players as $data) {
-            if ($data['login'] == $player->login) {
-                // display information window for the banned player
-                $header = 'Ultimania global record database information:';
-                $data = array();
-                $data[] = array('$f00You\'re banned from the global records database Ultimania!');
-                $data[] = array('');
-                $data[] = array('This means:');
-                $data[] = array('- You can\'t drive records anymore');
-                $data[] = array('- You will always see this window on server join');
-                $data[] = array('');
-                $data[] = array('You can be unbanned by writing an apology for whatever you\'ve done');
-                $data[] = array('(cheating, hacking, ...) to enwi2@t-online.de (the e-mail of the owner of Ultimania, Askuri).');
-                $data[] = array('If Askuri thinks you regret whatever you did, he\'ll unban you.');
-                $data[] = array('');
-                $data[] = array('Best regards');
-                display_manialink($player->login, $header, array('Icons64x64_1', 'TrackInfo', -0.01), $data, array(1.1), 'OK');
-            }
+        if ($playerFromApi->isBanned()) {
+            // display information window for the banned player
+            $header = 'Ultimania global record database information:';
+            $data = array();
+            $data[] = array('$f00You\'re banned from the global records database Ultimania!');
+            $data[] = array('');
+            $data[] = array('This means:');
+            $data[] = array('- You can\'t drive records anymore');
+            $data[] = array('- You will always see this window on server join');
+            $data[] = array('');
+            $data[] = array('You can be unbanned by writing an apology for whatever you\'ve done');
+            $data[] = array('(cheating, hacking, ...) to enwi2@t-online.de (the e-mail of the owner of Ultimania, Askuri).');
+            $data[] = array('If Askuri thinks you regret whatever you did, he\'ll unban you.');
+            $data[] = array('');
+            $data[] = array('Best regards');
+            display_manialink($player->login, $header, array('Icons64x64_1', 'TrackInfo', -0.01), $data, array(1.1), 'OK');
         }
 
         // Remove Dedimania PB widget in bottom-right corner
@@ -119,8 +113,8 @@ class Ultimania {
         }
 
         // display global PB widget
-        $recordsByLogin = $this->records->getRecordsIndexedByLogin();
-        $this->pbWidgetShow($player, $recordsByLogin[$player->login]);
+        $personalBestRecord = $this->records->getRecordByLogin($player->login);
+        $this->pbWidgetShow($player, $personalBestRecord);
     }
 
     /**
@@ -295,25 +289,6 @@ class Ultimania {
     }
 
     /**
-     * @return UltimaniaRecord[]
-     */
-    private function fetchRecordsFromServer() {
-        $records = $this->sendRequest('gettop', ['limit' => '0']);
-
-        if (empty($records)) return [];
-
-        return $this->mapApiRecordDtosToUltiRecords($records);
-    }
-
-    /**
-     * @param UltimaniaRecord $ultiRecord
-     * @return mixed
-     */
-    private function submitRecordToApi(UltimaniaRecord $ultiRecord) {
-        return $this->sendRequest('playerfinish', $this->mapUltiRecordToApiRecordDto($ultiRecord));
-    }
-
-    /**
      * @return mixed
      */
     private function fetchBannedPlayers() {
@@ -464,14 +439,11 @@ class Ultimania {
      * @return void
      */
     private function pbWidgetShow($player, $record) {
-        if ($record->getScore()) {
-            $pbText = $record->getScore();
-        } else {
+        if (empty($record)) {
             $pbText = '---';
+        } else {
+            $pbText = $record->getScore();
         }
-        $pbText="
-        
-    ";
 
         $xml = '<manialink id="ultimania_pbwidget">
 			<frame posn="53.5 -32.7 0">
@@ -668,7 +640,7 @@ class Ultimania {
      * @return void
      */
     private function refreshRecordsListAndReleaseEvent() {
-        $this->records->setAll($this->fetchRecordsFromServer());
+        $this->records->refresh($this->xasecoAdapter->getCurrentChallengeObject()->uid);
         $this->releaseRecordsLoadedEvent();
     }
 
@@ -735,40 +707,6 @@ class Ultimania {
             $xasecoRecord->player->nickname,
             $xasecoRecord->score
         );
-    }
-
-    /**
-     * @param UltimaniaRecord $ultimaniaRecord
-     * @return array{'login': string, "nick": string, "score": int}
-     */
-    private function mapUltiRecordToApiRecordDto(UltimaniaRecord $ultimaniaRecord) {
-        return [
-            'login' => $ultimaniaRecord->getLogin(),
-            'nick' => $ultimaniaRecord->getNick(),
-            'score' => $ultimaniaRecord->getScore(),
-            'replay' => base64_encode($ultimaniaRecord->getReplay())
-        ];
-    }
-
-    /**
-     * @param array{'login': string, "nick": string, "score": int, "add_time": int} $dto
-     * @return UltimaniaRecord
-     */
-    private function mapApiRecordDtoToUltiRecord($dto) {
-        return new UltimaniaRecord(
-            $dto['login'],
-            $dto['nick'],
-            $dto['score'],
-            $dto['add_time']
-        );
-    }
-
-    /**
-     * @param array{'login': string, "nick": string, "score": int, "add_time": int}[] $dtos
-     * @return UltimaniaRecord[]
-     */
-    private function mapApiRecordDtosToUltiRecords($dtos) {
-        return array_map('self::mapApiRecordDtoToUltiRecord', $dtos);
     }
 
     /**

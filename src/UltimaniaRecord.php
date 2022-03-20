@@ -1,11 +1,18 @@
 <?php
 
 class UltimaniaRecord {
-    /** @var string */
-    private $login;
+
+    /** @var string|null */
+    private $id;
 
     /** @var string */
-    private $nick;
+    private $login; // todo rename to player_login
+
+    /** @var string */
+    private $map_uid;
+
+    /** @var string @deprecated */
+    private $nick; // todo remove
 
     /** @var int */
     private $score;
@@ -14,19 +21,36 @@ class UltimaniaRecord {
     private $addTime;
 
     /** @var string|null */
-    private $replay;
+    private $replay; // todo remove?
 
     /**
      * @param string $login
      * @param string $nick
      * @param int $score
      * @param int|null $addTime
+     * @param string|null $id
      */
-    public function __construct($login, $nick, $score, $addTime = null) {
+    public function __construct($login, $nick, $score, $addTime = null, $id = null) {
         $this->login = $login;
         $this->nick = $nick;
         $this->score = $score;
         $this->addTime = $addTime;
+        $this->id = $id;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getId() {
+        return $this->id;
+    }
+
+    /**
+     * @param string|null $id
+     * @return void
+     */
+    public function setId($id) {
+        $this->id = $id;
     }
 
     /**
@@ -34,6 +58,13 @@ class UltimaniaRecord {
      */
     public function getLogin() {
         return $this->login;
+    }
+
+    /**
+     * @return string
+     */
+    public function getMapUid() {
+        return $this->map_uid;
     }
 
     /**
@@ -87,6 +118,5 @@ class UltimaniaRecord {
     public function setReplay($replay) {
         $this->replay = $replay;
     }
-
 
 }

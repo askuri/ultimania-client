@@ -4,11 +4,22 @@
  * Store and provide access to Ultimania Records independent of a map
  */
 class UltimaniaRecords {
+
+    /** @var UltimaniaClient */
+    private $ultiClient;
+
     /**
      * all records, always sorted in descending order
      * @var UltimaniaRecord[]
      */
     private $recordsOrderedByScore = [];
+
+    /**
+     * @param UltimaniaClient $ultiClient
+     */
+    public function __construct($ultiClient) {
+        $this->ultiClient = $ultiClient;
+    }
 
     /**
      * @return UltimaniaRecord[]
@@ -38,14 +49,6 @@ class UltimaniaRecords {
     }
 
     /**
-     * @param UltimaniaRecord[] $records
-     * @return void
-     */
-    public function setAll($records) {
-        $this->recordsOrderedByScore = $records;
-    }
-
-    /**
      * @return bool
      */
     public function isEmpty() {
@@ -53,22 +56,27 @@ class UltimaniaRecords {
     }
 
     /**
+     * @param string $forMapUid
+     * @return void
+     */
+    public function refresh($forMapUid) {
+        $this->recordsOrderedByScore = $this->ultiClient->getRecords($forMapUid);
+    }
+
+    /**
      * @param UltimaniaRecord $newRecord
+     * @param string $mapUid
+     * @param string $replayContent
      * @return UltimaniaRecordImprovement
      */
-    public function insertOrUpdate($newRecord) {
-        $improvement = new UltimaniaRecordImprovement();
+    public function insertOrUpdate($newRecord, $mapUid, $replayContent) {
+        $improvement = $this->localInsertOrUpdate($newRecord);
 
-        $pointerToPreviousRecord = $this->getRecordByLogin($newRecord->getLogin());
-
-        $improvement->setPreviousRecord($this->cloneIfIsObject($pointerToPreviousRecord));
-        $improvement->setPreviousRank($this->getRankByLogin($newRecord->getLogin()));
-
-        $this->updateScoreOfRecordIfImproved($pointerToPreviousRecord, $newRecord);
-        usort($this->recordsOrderedByScore, "ulti_sortRecordsDesc");
-
-        $improvement->setNewRecord($newRecord);
-        $improvement->setNewRank($this->getRankByLogin($newRecord->getLogin()));
+        if ($improvement->getType() != UltimaniaRecordImprovement::TYPE_NO_IMPROVEMENT) {
+            $savedRecord = $this->ultiClient->submitRecord($newRecord, $mapUid);
+            $this->getRecordByLogin($newRecord->getLogin())->setId($savedRecord->getId());
+            $this->ultiClient->submitReplay($savedRecord->getId(), $replayContent);
+        }
 
         return $improvement;
     }
@@ -97,18 +105,39 @@ class UltimaniaRecords {
     }
 
     /**
+     * @param UltimaniaRecord $newRecord
+     * @return UltimaniaRecordImprovement
+     */
+    private function localInsertOrUpdate($newRecord) {
+        $improvement = new UltimaniaRecordImprovement();
+
+        $referenceToPreviousRecord = $this->getRecordByLogin($newRecord->getLogin());
+
+        $improvement->setPreviousRecord($this->cloneIfIsObject($referenceToPreviousRecord));
+        $improvement->setPreviousRank($this->getRankByLogin($newRecord->getLogin()));
+
+        $this->updateScoreOfRecordIfImprovedOrInsert($referenceToPreviousRecord, $newRecord);
+
+        $improvement->setNewRecord($newRecord);
+        $improvement->setNewRank($this->getRankByLogin($newRecord->getLogin()));
+
+        return $improvement;
+    }
+
+    /**
      * @param UltimaniaRecord|null $previousRecord
      * @param UltimaniaRecord $newRecord
      * @return void
      */
-    private function updateScoreOfRecordIfImproved($previousRecord, UltimaniaRecord $newRecord) {
-        if ($previousRecord instanceof UltimaniaRecord &&
-            $newRecord->getScore() <= $previousRecord->getScore()
-        ) {
-            $previousRecord->setScore($newRecord->getScore());
+    private function updateScoreOfRecordIfImprovedOrInsert($previousRecord, UltimaniaRecord $newRecord) {
+        if ($previousRecord instanceof UltimaniaRecord) {
+            if ($newRecord->getScore() > $previousRecord->getScore()) {
+                $previousRecord->setScore($newRecord->getScore());
+            }
         } else {
             $this->recordsOrderedByScore[] = $newRecord;
         }
+        usort($this->recordsOrderedByScore, "ulti_sortRecordsDesc");
     }
 
     /**
@@ -126,8 +155,9 @@ class UltimaniaRecords {
     }
 
     /**
-     * @param mixed $obj
-     * @return object|null
+     * @template T
+     * @param T $obj
+     * @return T|null
      */
     private function cloneIfIsObject($obj) {
         if (is_object($obj)) {

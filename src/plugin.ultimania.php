@@ -66,10 +66,10 @@ Aseco::addChatCommand('ultiupdate', 'Updates Ultimania', false); /** @phpstan-ig
 Aseco::addChatCommand('ultilist', 'Shows all records', false); /** @phpstan-ignore-line */
 
 const ULTI_VERSION      = '1.4.0';
-const ULTI_API_VERSION  = '4'; // DO NOT CHANGE!!! you may get strange or outdated results so keep it as is
+const ULTI_API_VERSION  = '5'; // DO NOT CHANGE!!! You may get strange or outdated results so keep it as is
 const ULTI_API_INFO     = 'http://askuri.de/ultimania/'; // This URL is permanent. It will (ok, should) never change and defines the real home of the API
 const ULTI_ID_PREFIX = 5450; // Change this if unexpected things happen when clicking something
-const ULTI_MIN_PHP      = '5.5.0'; // Minimum required PHP version
+const ULTI_MIN_PHP      = '5.6.0'; // Minimum required PHP version
 const ULTI_MIN_XASECO   = '1.14'; // Minimum required XAseco version
 
 const ULTI_EVENT_RECORDS_LOADED_LEGACY = 'onUltimaniaRecordsLoaded';
@@ -83,18 +83,23 @@ global $ultiXasecoAdapter;
 
 require 'Ultimania.php';
 require 'UltimaniaConfig.php';
+require 'UltimaniaDtoMapper.php';
+require 'UltimaniaClient.php';
 require 'UltimaniaRecord.php';
 require 'UltimaniaRecords.php';
 require 'UltimaniaRecordImprovement.php';
+require 'UltimaniaPlayer.php';
 require 'UltimaniaLegacyAdapter.php';
 require 'UltimaniaXasecoAdapter.php';
 
 
 $ultiConfig = UltimaniaConfig::instantiateFromFile('ultimania.xml');
 
-$ultiRecords = new UltimaniaRecords;
-$ultiXasecoAdapter = new UltimaniaXasecoAdapter;
-$ultiMainClass = new Ultimania($ultiConfig, $ultiRecords, $ultiXasecoAdapter);
+$ultiDtoMapper = new UltimaniaDtoMapper();
+$ultiClient = new UltimaniaClient($ultiConfig, $ultiDtoMapper);
+$ultiRecords = new UltimaniaRecords($ultiClient);
+$ultiXasecoAdapter = new UltimaniaXasecoAdapter();
+$ultiMainClass = new Ultimania($ultiConfig, $ultiRecords, $ultiXasecoAdapter, $ultiClient);
 
 $ulti = new UltimaniaLegacyAdapter($ultiConfig, $ultiRecords);
 
@@ -146,7 +151,7 @@ function ulti_onSync($aseco) { /** @phpstan-ignore-line */
 }
 function ulti_onNewChallenge2($aseco, $challenge_item) { /** @phpstan-ignore-line */
     global $ultiMainClass;
-    $ultiMainClass->onNewChallenge();
+    $ultiMainClass->onNewChallenge($challenge_item);
 }
 function ulti_onPlayerFinish($aseco, $finish) { /** @phpstan-ignore-line */
     global $ultiMainClass;
