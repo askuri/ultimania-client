@@ -554,10 +554,12 @@ class Ultimania {
             return;
         }
 
+        // todo is stripColors enough to make it consistent with localdatabase?
+        $nicknameWithoutColors = stripColors($player->nickname);
         switch ($improvement->getType()) {
             case UltimaniaRecordImprovement::TYPE_NEW:
                 $message = $this->xasecoAdapter->formatColors(formatText($this->config->getMessageRecordNew(),
-                    $player->nickname,
+                    $nicknameWithoutColors,
                     $improvement->getNewRank(),
                     $improvement->getNewRecord()->getScore(),
                     $improvement->getPreviousRank(),
@@ -566,14 +568,14 @@ class Ultimania {
                 break;
             case UltimaniaRecordImprovement::TYPE_EQUAL:
                 $message = $this->xasecoAdapter->formatColors(formatText($this->config->getMessageRecordEqual(),
-                    $player->nickname,
+                    $nicknameWithoutColors,
                     $improvement->getNewRank(),
                     $improvement->getNewRecord()->getScore()
                 ));
                 break;
             case UltimaniaRecordImprovement::TYPE_NEW_RANK:
                 $message = $this->xasecoAdapter->formatColors(formatText($this->config->getMessageRecordNewRank(),
-                    $player->nickname,
+                    $nicknameWithoutColors,
                     $improvement->getNewRank(),
                     $improvement->getNewRecord()->getScore(),
                     $improvement->getPreviousRank(),
@@ -582,7 +584,7 @@ class Ultimania {
                 break;
             case UltimaniaRecordImprovement::TYPE_FIRST:
                 $message = $this->xasecoAdapter->formatColors(formatText($this->config->getMessageRecordFirst(),
-                    $player->nickname,
+                    $nicknameWithoutColors,
                     $improvement->getNewRank(),
                     $improvement->getNewRecord()->getScore()
                 ));

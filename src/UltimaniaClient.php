@@ -28,17 +28,19 @@ class UltimaniaClient {
     public function getRecords($mapUid, $limit = null) {
         return $this->dtoMapper->mapRecordDtosToUltiRecords(
             $this->doRequest('GET',
-                'maps/' . $mapUid . '/records', ['limit' => $limit]
+                'maps/' . $mapUid . '/records',
+                ['limit' => $limit]
             )['response']
         );
     }
 
-    public function getReplay($recordId) {
-
-    }
-
     public function submitReplay($recordId, $replayContent) {
-
+        $this->doRequest(
+            'POST',
+            'records/' . $recordId . '/replay',
+            $replayContent,
+            true
+        );
     }
 
     /**
@@ -85,24 +87,31 @@ class UltimaniaClient {
     /**
      * @param string $method "GET"|"POST"|"PUT"
      * @param string $endpoint Path in URL after /api/v5/ (no leading slashes needed in this parameter)
-     * @param mixed[] $parameters When GET, these are query parameters, otherwise these are put as JSON in the body
+     * @param mixed $payload When GET, these are query parameters, otherwise these are put as JSON in the body
      * @return array{"response": mixed|null, "httpcode": int}
      */
-    private function doRequest($method, $endpoint, array $parameters = []) {
+    private function doRequest($method, $endpoint, $payload, $isBinaryRequest = false) {
         $handle = curl_init();
 
         $url = $this->apiUrl . '/v' . ULTI_API_VERSION . '/' . $endpoint;
+        $httpHeaders = ['Accept: application/json'];
 
         curl_setopt($handle, CURLOPT_USERAGENT, 'TMF\Xaseco' . XASECO_VERSION . '\Ultimania' . ULTI_VERSION . '\API' . ULTI_API_VERSION);
         curl_setopt($handle, CURLOPT_HEADER, false);
         curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($handle, CURLOPT_HTTPHEADER, ['Content-Type: application/json', 'Accept: application/json']);
         curl_setopt($handle, CURLOPT_CUSTOMREQUEST, $method);
         if ($method == 'GET') {
-            $url .= http_build_query($parameters);
+            $url .= http_build_query($payload);
         } else {
-            curl_setopt($handle, CURLOPT_POSTFIELDS, json_encode($parameters));
+            if ($isBinaryRequest) {
+                $httpHeaders[] = 'Content-Type: application/octet-stream';
+            } else {
+                $payload = json_encode($payload);
+                $httpHeaders[] = 'Content-Type: application/json';
+            }
+            curl_setopt($handle, CURLOPT_POSTFIELDS, $payload);
         }
+        curl_setopt($handle, CURLOPT_HTTPHEADER, $httpHeaders);
         curl_setopt($handle, CURLOPT_TIMEOUT, $this->config->getConnectTimeout());
         curl_setopt($handle, CURLOPT_LOW_SPEED_TIME, $this->config->getRequestTimeout());
         curl_setopt($handle, CURLOPT_URL, $url);
@@ -114,7 +123,7 @@ class UltimaniaClient {
         $curlErrorMessage = curl_error($handle);
         if (!empty($curlErrorMessage) && !($httpStatus >= 200 && $httpStatus <= 299)) {
             $curlErrorNumber = curl_errno($handle);
-            trigger_error("[Ultimania] Error while communicating with Ultimania server. URL: $url; Parameters: ".print_r($parameters, true)."; HTTP Status: $httpStatus; Curl error number: $curlErrorNumber; Message: $curlErrorMessage", E_USER_WARNING);
+            trigger_error("[Ultimania] Error while communicating with Ultimania server. URL: $url; Parameters: ".print_r($payload, true)."; HTTP Status: $httpStatus; Curl error number: $curlErrorNumber; Message: $curlErrorMessage", E_USER_WARNING);
         }
 
         curl_close($handle);
