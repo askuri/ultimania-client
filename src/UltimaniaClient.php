@@ -38,8 +38,8 @@ class UltimaniaClient {
     }
 
     /**
-     * @param $recordId
-     * @param $replayContent
+     * @param string $recordId
+     * @param string $replayContent
      * @return array{"replay_available": bool}
      */
     public function submitReplay($recordId, $replayContent) {
@@ -96,6 +96,7 @@ class UltimaniaClient {
      * @param string $method "GET"|"POST"|"PUT"
      * @param string $endpoint Path in URL after /api/v5/ (no leading slashes needed in this parameter)
      * @param mixed $payload When GET, these are query parameters, otherwise these are put as JSON in the body
+     * @param bool $isBinaryRequest If it's binary, it won't be json_encoded. Instead, it goes straight to the body.
      * @return array{"response": mixed|null, "httpcode": int}
      */
     private function doRequest($method, $endpoint, $payload, $isBinaryRequest = false) {

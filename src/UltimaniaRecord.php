@@ -32,6 +32,7 @@ class UltimaniaRecord {
      * @param int $score
      * @param int|null $addTime
      * @param string|null $id
+     * @param boolean|null $replayAvailable
      */
     public function __construct($player, $mapUid, $score, $addTime = null, $id = null, $replayAvailable = null) {
         if (is_string($player)) {
