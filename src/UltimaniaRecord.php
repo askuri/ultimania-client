@@ -20,6 +20,9 @@ class UltimaniaRecord {
     /** @var int|null  */
     private $addTime;
 
+    /** @var bool|null */
+    private $replayAvailable;
+
     /** @var string|null */
     private $replay; // todo remove?
 
@@ -30,7 +33,7 @@ class UltimaniaRecord {
      * @param int|null $addTime
      * @param string|null $id
      */
-    public function __construct($player, $mapUid, $score, $addTime = null, $id = null) {
+    public function __construct($player, $mapUid, $score, $addTime = null, $id = null, $replayAvailable = null) {
         if (is_string($player)) {
             $this->playerLogin = $player;
         } else {
@@ -40,6 +43,7 @@ class UltimaniaRecord {
         $this->score = $score;
         $this->addTime = $addTime;
         $this->id = $id;
+        $this->replayAvailable = $replayAvailable;
     }
 
     /**
@@ -121,6 +125,21 @@ class UltimaniaRecord {
      */
     public function setReplay($replay) {
         $this->replay = $replay;
+    }
+
+    /**
+     * @return bool|null
+     */
+    public function isReplayAvailable() {
+        return $this->replayAvailable;
+    }
+
+    /**
+     * @param bool $replayAvailable
+     * @return void
+     */
+    public function setReplayAvailable($replayAvailable) {
+        $this->replayAvailable = $replayAvailable;
     }
 
 }

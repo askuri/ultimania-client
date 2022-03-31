@@ -14,7 +14,7 @@ class UltimaniaDtoMapper {
     }
 
     /**
-     * @param array{'player': array{"login": string, "nick": "string", "allow_replay_download": bool, "banned": bool}, "id": string|null, "map_uid": string, "score": int, "updated_at": int} $dto
+     * @param array{'player': array{"login": string, "nick": "string", "allow_replay_download": bool, "banned": bool}, "id": string|null, "map_uid": string, "score": int, "updated_at": int, "replay_available": bool} $dto
      * @return UltimaniaRecord
      */
     public function mapRecordDtoWithPlayerDtoToUltiRecord($dto) {
@@ -23,12 +23,13 @@ class UltimaniaDtoMapper {
             $dto['map_uid'],
             $dto['score'],
             $dto['updated_at'],
-            $dto['id']
+            $dto['id'],
+            $dto['replay_available']
         );
     }
 
     /**
-     * @param array{'player_login': string, 'map_uid': string, "id": string|null, "score": int, "updated_at": int} $dto
+     * @param array{'player_login': string, 'map_uid': string, "id": string|null, "score": int, "updated_at": int, "replay_available": bool} $dto
      * @return UltimaniaRecord
      */
     public function mapRecordDtoToUltiRecord($dto) {
@@ -37,7 +38,8 @@ class UltimaniaDtoMapper {
             $dto['map_uid'],
             $dto['score'],
             $dto['updated_at'],
-            $dto['id']
+            $dto['id'],
+            $dto['replay_available']
         );
     }
 

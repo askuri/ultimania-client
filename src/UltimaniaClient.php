@@ -11,6 +11,9 @@ class UltimaniaClient {
     /** @var string  @todo set correct url*/
     private $apiUrl = 'http://localhost:8000/api';
 
+    /** @var string @todo set correct url */
+    private $manialinksUrl = 'http://localhost:8000/manialinks';
+
     /**
      * @param UltimaniaConfig $config
      * @param UltimaniaDtoMapper $dtoMapper
@@ -34,13 +37,18 @@ class UltimaniaClient {
         );
     }
 
+    /**
+     * @param $recordId
+     * @param $replayContent
+     * @return array{"replay_available": bool}
+     */
     public function submitReplay($recordId, $replayContent) {
-        $this->doRequest(
+        return $this->doRequest(
             'POST',
             'records/' . $recordId . '/replay',
             $replayContent,
             true
-        );
+        )['response'];
     }
 
     /**
@@ -138,6 +146,14 @@ class UltimaniaClient {
             'response' => $jsonDecodedResponse,
             'httpcode' => $httpStatus,
         ];
+    }
+
+    /**
+     * @param UltimaniaRecord $record
+     * @return string
+     */
+    public function getLinkForViewReplayManialink($record) {
+        return $this->manialinksUrl . '/view_replay?record_id=' . $record->getId();
     }
 
     /**

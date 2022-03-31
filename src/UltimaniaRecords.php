@@ -73,8 +73,12 @@ class UltimaniaRecords {
 
         if ($improvement->getType() != UltimaniaRecordImprovement::TYPE_NO_IMPROVEMENT) {
             $savedRecord = $this->ultiClient->submitRecord($newRecord, $newRecord->getMapUid());
-            $this->getRecordByLogin($newRecord->getPlayer()->getLogin())->setId($savedRecord->getId());
-            $this->ultiClient->submitReplay($savedRecord->getId(), $replayContent);
+            $replayAvailable = $this->ultiClient->submitReplay($savedRecord->getId(), $replayContent)['replay_available'];
+
+            // post-saving updates
+            $referenceToLocallySavedRecord = $this->getRecordByLogin($newRecord->getPlayer()->getLogin());
+            $referenceToLocallySavedRecord->setId($savedRecord->getId());
+            $referenceToLocallySavedRecord->setReplayAvailable($replayAvailable);
         }
 
         return $improvement;
