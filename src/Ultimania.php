@@ -79,7 +79,7 @@ class Ultimania {
      * @return void
      */
     public function onPlayerConnect(Player $player) {
-        $playerFromApi = $this->ultiClient->registerOrUpdatePlayer($player);
+        $playerFromApi = $this->ultiClient->registerOrUpdatePlayer($this->mapXasecoPlayerToUltiPlayer($player));
 
         if ($playerFromApi->isBanned()) {
             $this->showBannedPlayerInfoWindow($player);
@@ -134,14 +134,26 @@ class Ultimania {
 
                 $this->mainWindowShow($player);
                 break;
+
             case ULTI_ID_PREFIX . 102:
                 $this->mainWindowHideToPlayer($player);
                 break;
+
             case ULTI_ID_PREFIX . 104:
                 $this->showFullRecordList($player);
                 break;
-            default: // special cases
 
+            case ULTI_ID_PREFIX . 105:
+                $this->ultiClient->toggleAllowReplayDownlod($player->login);
+
+                // refresh the list so the player sees he can't even download his own replay
+                $this->refreshRecordsListAndReleaseEvent();
+
+                // refresh the window
+                $this->mainWindowShow($player);
+                break;
+
+            default: // special cases
                 // Prefix for recordinfos is 2
                 if (substr((string) $actionId, 0, strlen(ULTI_ID_PREFIX) + 1) == ULTI_ID_PREFIX . 2) {
                     $rank = intval(substr((string) $actionId, strlen(ULTI_ID_PREFIX) + 1)) + 1;
@@ -239,7 +251,8 @@ class Ultimania {
 
         $xml .= '
 			<quad posn="-38 1 1" sizen="37 47" style="BgsPlayerCard" substyle="BgRacePlayerName" valign="center" />
-			<quad posn="-0.5 24.5 1" sizen="38.5 47" style="BgsPlayerCard" substyle="BgRacePlayerName" />
+			<quad posn="-0.5 24.5 1" sizen="38.5 41.5" style="BgsPlayerCard" substyle="BgRacePlayerName" />
+			<quad posn="-0.5 -17.5 1" sizen="38.5 5" style="BgsPlayerCard" substyle="BgRacePlayerName" />
 			
 			<label posn="0 24 2" text="' . $ultinfo . '" textsize="2" />
 		';
@@ -290,8 +303,16 @@ class Ultimania {
                 $y -= 1.83;
             }
         }
+        $xml .= '</frame>';
 
-        $xml .= '</frame> </manialink>';
+        $xml .= '<frame posn="0.2 -20 0">';
+        $allowReplayDownload = $this->ultiClient->getPlayerInfo($player->login)->isAllowReplayDownload();
+        $allowReplayDownloadSubstyle = $allowReplayDownload == true ? "LvlGreen" : "LvlRed";
+        $xml .= '<quad posn="0.4 0 5" sizen="1.5 1.5" style="Icons64x64_1" substyle="' . $allowReplayDownloadSubstyle . '" valign="center"/>';
+        $xml .= '<label posn="0 0 1" style="CardButtonSmallWide" text="Allow players to view my replays" valign="center" scale="0.77" action="' . ULTI_ID_PREFIX . 105 . '"/>';
+        $xml .= '</frame>';
+
+        $xml .= '</manialink>';
 
         $this->xasecoAdapter->sendManialinkToPlayer($player, $xml);
     }

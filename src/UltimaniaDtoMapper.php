@@ -19,7 +19,7 @@ class UltimaniaDtoMapper {
      */
     public function mapRecordDtoWithPlayerDtoToUltiRecord($dto) {
         return new UltimaniaRecord(
-            $this->mapPlayerDtoToUltimaniaPlayer($dto['player']),
+            $this->mapPlayerDtoToUltiPlayer($dto['player']),
             $dto['map_uid'],
             $dto['score'],
             $dto['updated_at'],
@@ -68,26 +68,27 @@ class UltimaniaDtoMapper {
     }
 
     /**
-     * @param Player $player
-     * @return array{'login': string, 'nick': string}
-     */
-    public function mapXasecoPlayerToPlayerDto(Player $player) {
-        return [
-            'login' => $player->login,
-            'nick' => $player->nickname,
-        ];
-    }
-
-    /**
      * @param array{'login': string, 'nick': string, 'allow_replay_download': bool, 'banned': bool} $playerDto
      * @return UltimaniaPlayer
      */
-    public function mapPlayerDtoToUltimaniaPlayer($playerDto) {
+    public function mapPlayerDtoToUltiPlayer($playerDto) {
         return new UltimaniaPlayer(
             $playerDto['login'],
             $playerDto['nick'],
             $playerDto['allow_replay_download'],
             $playerDto['banned']
         );
+    }
+
+    /**
+     * @param UltimaniaPlayer $player
+     * @return array{'login': string, 'nick': string, 'allow_replay_download': bool} $playerDto
+     */
+    public function mapUltiPlayerToPlayerDto(UltimaniaPlayer $player) {
+        return [
+            'login' => $player->getLogin(),
+            'nick' => $player->getNick(),
+            'allow_replay_download' => $player->isAllowReplayDownload(),
+        ];
     }
 }

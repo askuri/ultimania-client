@@ -67,17 +67,41 @@ class UltimaniaClient {
     }
 
     /**
-     * @param Player $player
+     * @param string $playerLogin
+     * @return UltimaniaPlayer
+     */
+    public function getPlayerInfo($playerLogin) {
+        return $this->dtoMapper->mapPlayerDtoToUltiPlayer(
+            $this->doRequest(
+                'GET',
+                'players/' . $playerLogin,
+                []
+            )['response']
+        );
+    }
+
+    /**
+     * @param UltimaniaPlayer $player
      * @return UltimaniaPlayer
      */
     public function registerOrUpdatePlayer($player) {
-        return $this->dtoMapper->mapPlayerDtoToUltimaniaPlayer(
+        return $this->dtoMapper->mapPlayerDtoToUltiPlayer(
             $this->doRequest(
                 'PUT',
                 'players',
-                $this->dtoMapper->mapXasecoPlayerToPlayerDto($player)
+                $this->dtoMapper->mapUltiPlayerToPlayerDto($player)
             )['response']
         );
+    }
+
+    /**
+     * @param string $playerLogin
+     * @return void
+     */
+    public function toggleAllowReplayDownlod($playerLogin) {
+        $ultiPlayer = $this->getPlayerInfo($playerLogin);
+        $ultiPlayer->setAllowReplayDownload( ! $ultiPlayer->isAllowReplayDownload());
+        $this->registerOrUpdatePlayer($ultiPlayer);
     }
 
     /**

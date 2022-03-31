@@ -43,10 +43,16 @@ class UltimaniaPlayer {
 
     /**
      * @return bool|null
-     * @todo remove?
      */
     public function isAllowReplayDownload() {
         return $this->allowReplayDownload;
+    }
+
+    /**
+     * @param bool $allowReplayDownload
+     */
+    public function setAllowReplayDownload($allowReplayDownload) {
+        $this->allowReplayDownload = $allowReplayDownload;
     }
 
     /**
