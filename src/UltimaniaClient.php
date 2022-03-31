@@ -154,7 +154,7 @@ class UltimaniaClient {
      * @return string
      */
     public function getLinkForViewReplayManialink($record) {
-        return $this->manialinksUrl . '/view_replay?record_id=' . $record->getId();
+        return $this->manialinksUrl . '/view_replay?record_id=' . $record->getId() . '&amp;cache_bust=' . uniqid();
     }
 
     /**
