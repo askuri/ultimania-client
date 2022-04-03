@@ -1,9 +1,7 @@
 <?php
 
-/**
- * @todo keep the xml file? do we need it?
- */
 class UltimaniaConfig {
+    // non-configurable via XML
     /** @var int */
     private $refresh_interval = 180;
     /** @var int */
@@ -13,6 +11,7 @@ class UltimaniaConfig {
     /** @var int */
     private $number_of_records_display_limit = 25;
 
+    // configurable via XML with defaults in this file
     /** @var string|null */
     private $messageRecordNew;
     /** @var string|null */

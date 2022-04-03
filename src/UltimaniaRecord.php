@@ -23,9 +23,6 @@ class UltimaniaRecord {
     /** @var bool|null */
     private $replayAvailable;
 
-    /** @var string|null */
-    private $replay; // todo remove?
-
     /**
      * @param UltimaniaPlayer|string $player if string, only set the login
      * @param string $mapUid
@@ -111,21 +108,6 @@ class UltimaniaRecord {
      */
     public function setAddTime($addTime) {
         $this->addTime = $addTime;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getReplay() {
-        return $this->replay;
-    }
-
-    /**
-     * @param string|null $replay
-     * @return void
-     */
-    public function setReplay($replay) {
-        $this->replay = $replay;
     }
 
     /**
