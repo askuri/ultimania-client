@@ -291,8 +291,7 @@ class Ultimania {
                 $xml .= '<label posn="' . ($x + 21) . ' ' . $y . ' 1" text="' . $record->getPlayer()->getLogin() . '" sizen="13 2" textsize="1" />';
 
                 if ($record->isReplayAvailable()) {
-                    $xml .= '<quad posn="' . ($x + 34.2) . ' ' . ($y + 0.2) . ' 2" sizen="1.8 1.8" style="Icons128x128_1" substyle="Replay" />';
-                    $xml .= '<label posn="' . ($x + 34.2) . ' ' . ($y + 1.2) . ' 2" text="$h['.$this->ultiClient->getLinkForViewReplayManialink($record).']  " />';
+                    $xml .= '<quad posn="' . ($x + 34.2) . ' ' . ($y + 0.2) . ' 2" sizen="1.8 1.8" style="Icons128x128_1" substyle="Replay" manialink="'.$this->ultiClient->getLinkForViewReplayManialink($record).'" />';
                 }
                 $xml .= '<quad posn="' . ($x + 35.8) . ' ' . ($y - 0.1) . ' 2" sizen="1.35 1.35" style="Icons64x64_1" substyle="TrackInfo" action="' . ULTI_ID_PREFIX . 2 . $i . '" />';
 
