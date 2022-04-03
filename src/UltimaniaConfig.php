@@ -13,30 +13,33 @@ class UltimaniaConfig {
     /** @var int */
     private $number_of_records_display_limit = 25;
 
-    /** @var SimpleXMLElement */
-    private $displayRecordMessagesForBestOnly;
-    /** @var SimpleXMLElement */
+    /** @var string|null */
     private $messageRecordNew;
-    /** @var SimpleXMLElement */
+    /** @var string|null */
     private $messageRecordEqual;
-    /** @var SimpleXMLElement */
+    /** @var string|null */
     private $messageRecordNewRank;
-    /** @var SimpleXMLElement */
+    /** @var string|null */
     private $messageRecordFirst;
 
     /**
      * Creates an object of this calls and populates it with the values from the given xml file.
+     * It's not necessary to instantiate this class with a config file. Just create it with the
+     * usual constructor and it will take the defaults.
+     *
      * @param string $filename
      * @return UltimaniaConfig
      */
     public static function instantiateFromFile($filename) {
         $ultiConfig = new self();
-        $rawConfig = simplexml_load_file($filename);
-        $ultiConfig->displayRecordMessagesForBestOnly = $rawConfig->display_record_messages_for_best_only;
-        $ultiConfig->messageRecordNew = $rawConfig->messages->record_new;
-        $ultiConfig->messageRecordEqual = $rawConfig->messages->record_equal;
-        $ultiConfig->messageRecordNewRank = $rawConfig->messages->record_new_rank;
-        $ultiConfig->messageRecordFirst = $rawConfig->messages->record_first;
+
+        if (file_exists($filename)) {
+            $rawConfig = simplexml_load_file($filename);
+            $ultiConfig->messageRecordNew = (string)$rawConfig->messages->record_new;
+            $ultiConfig->messageRecordEqual = (string)$rawConfig->messages->record_equal;
+            $ultiConfig->messageRecordNewRank = (string)$rawConfig->messages->record_new_rank;
+            $ultiConfig->messageRecordFirst = (string)$rawConfig->messages->record_first;
+        }
 
         return $ultiConfig;
     }
@@ -70,47 +73,34 @@ class UltimaniaConfig {
     }
 
     /**
-     * @return bool
-     */
-    public function getDisplayRecordMessagesForBestOnly() {
-        return $this->xmlContentToBool($this->displayRecordMessagesForBestOnly);
-    }
-
-    /**
      * @return string
      */
     public function getMessageRecordNew() {
-        return (string) $this->messageRecordNew;
+        return isset($this->messageRecordNew) ? $this->messageRecordNew
+            : '{#server}>> {#highlite}{1}{#record} secured his/her {#rank}{2}{#record}. Ultimania Record! Score: {#highlite}{3}{#record} $n({#rank}{4}{#highlite}+{5}{#record})';
     }
 
     /**
      * @return string
      */
     public function getMessageRecordEqual() {
-        return (string) $this->messageRecordEqual;
+        return isset($this->messageRecordEqual) ? $this->messageRecordEqual
+            : '{#server}>> {#highlite}{1}{#record} equaled his/her {#rank}{2}{#record}. Ultimania Record! Score: {#highlite}{3}';
     }
 
     /**
      * @return string
      */
     function getMessageRecordNewRank() {
-        return (string) $this->messageRecordNewRank;
+        return isset($this->messageRecordNewRank) ? $this->messageRecordNewRank
+            : '{#server}>> {#highlite}{1}{#record} gained the {#rank}{2}{#record}. Ultimania Record! Score: {#highlite}{3}{#record} $n({#rank}{4}{#highlite}+{5}{#record})';
     }
 
     /**
      * @return string
      */
     public function getMessageRecordFirst() {
-        return (string) $this->messageRecordFirst;
+        return isset($this->messageRecordFirst) ? $this->messageRecordFirst
+            : '{#server}>> {#highlite}{1}{#record} claimed the {#rank}{2}{#record}. Ultimania Record! Score: {#highlite}{3}';
     }
-
-    /**
-     * @param SimpleXMLElement $val
-     * @return bool
-     */
-    private function xmlContentToBool($val) {
-        return filter_var((string) $val, FILTER_VALIDATE_BOOLEAN);
-    }
-
-
 }
