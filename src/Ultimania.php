@@ -567,57 +567,64 @@ class Ultimania {
     }
 
     /**
-     * @param Player $player
+     * @param Player $player Player who drove the record
      * @param UltimaniaRecordImprovement $improvement
      * @return void
      */
     private function displayPlayerFinishChatMessage(Player $player, UltimaniaRecordImprovement $improvement) {
-        // check if record should be shown according to settings
-        if ($this->config->getDisplayRecordMessagesForBestOnly() &&
-            $improvement->getNewRank() > $this->config->getNumberOfRecordsDisplayLimit()) {
-            return;
-        }
+        $message = $this->generatePlayerFinishMessage($player, $improvement);
 
-        // todo is stripColors enough to make it consistent with localdatabase?
+        if ($message) {
+            if ($improvement->getNewRank() <= $this->config->getNumberOfRecordsDisplayLimit()) {
+                // only show the message publicly, if it's within the display limit
+                $this->xasecoAdapter->chatSendServerMessage($this->xasecoAdapter->formatColors($message));
+            } else {
+                // if the score is not that good, show it to the player though
+                $message = str_replace('{#server}>> ', '{#server}> ', $message);
+                $this->xasecoAdapter->chatSendServerMessageToPlayer($this->xasecoAdapter->formatColors($message), $player);
+            }
+        }
+    }
+
+    /**
+     * Public only for testing. Would be too much work to actually fix the architectural issue behind that.
+     * @param Player $player Player who drove the record
+     * @param UltimaniaRecordImprovement $improvement
+     * @return string|null message or null if unknown record type
+     */
+    public function generatePlayerFinishMessage($player, UltimaniaRecordImprovement $improvement) {
         $nicknameWithoutColors = stripColors($player->nickname);
         switch ($improvement->getType()) {
             case UltimaniaRecordImprovement::TYPE_NEW:
-                $message = $this->xasecoAdapter->formatColors(formatText($this->config->getMessageRecordNew(),
+                return formatText($this->config->getMessageRecordNew(),
                     $nicknameWithoutColors,
                     $improvement->getNewRank(),
                     $improvement->getNewRecord()->getScore(),
                     $improvement->getPreviousRank(),
                     $improvement->getRecordDifference()
-                ));
-                break;
+                );
             case UltimaniaRecordImprovement::TYPE_EQUAL:
-                $message = $this->xasecoAdapter->formatColors(formatText($this->config->getMessageRecordEqual(),
+                return formatText($this->config->getMessageRecordEqual(),
                     $nicknameWithoutColors,
                     $improvement->getNewRank(),
                     $improvement->getNewRecord()->getScore()
-                ));
-                break;
+                );
             case UltimaniaRecordImprovement::TYPE_NEW_RANK:
-                $message = $this->xasecoAdapter->formatColors(formatText($this->config->getMessageRecordNewRank(),
+                return formatText($this->config->getMessageRecordNewRank(),
                     $nicknameWithoutColors,
                     $improvement->getNewRank(),
                     $improvement->getNewRecord()->getScore(),
                     $improvement->getPreviousRank(),
                     $improvement->getRecordDifference()
-                ));
-                break;
+                );
             case UltimaniaRecordImprovement::TYPE_FIRST:
-                $message = $this->xasecoAdapter->formatColors(formatText($this->config->getMessageRecordFirst(),
+                return formatText($this->config->getMessageRecordFirst(),
                     $nicknameWithoutColors,
                     $improvement->getNewRank(),
                     $improvement->getNewRecord()->getScore()
-                ));
-                break;
+                );
             default:
-                $message = null;
-        }
-        if ($message) {
-            $this->xasecoAdapter->chatSendServerMessage($message);
+                return null;
         }
     }
 
