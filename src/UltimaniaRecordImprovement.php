@@ -54,7 +54,7 @@ class UltimaniaRecordImprovement {
      * @return int Difference between new and previous score. Positive if improved.
      */
     public function getRecordDifference() {
-        return $this->getNewRecord()->getScore() - $this->getNewRecord()->getScore();
+        return $this->getNewRecord()->getScore() - $this->getPreviousRecord()->getScore();
     }
 
     /**
