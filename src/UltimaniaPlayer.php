@@ -50,6 +50,7 @@ class UltimaniaPlayer {
 
     /**
      * @param bool $allowReplayDownload
+     * @return void
      */
     public function setAllowReplayDownload($allowReplayDownload) {
         $this->allowReplayDownload = $allowReplayDownload;
