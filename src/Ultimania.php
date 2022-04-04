@@ -444,15 +444,15 @@ class Ultimania {
     private function showBannedPlayerInfoWindow(Player $player) {
         $header = 'Ultimania global record database information:';
         $data = array();
-        $data[] = array('$f00You\'re banned from the global records database Ultimania!');
+        $data[] = array('You\'re banned from the global records database Ultimania.');
         $data[] = array('');
-        $data[] = array('This means:');
-        $data[] = array('- You can\'t drive records anymore');
-        $data[] = array('- You will always see this window on server join');
+        $data[] = array('That means:');
+        $data[] = array('- Your record won\'t be saved on Ultimania');
+        $data[] = array('- You will always see this window when joining a server');
         $data[] = array('');
         $data[] = array('You can be unbanned by writing an apology for whatever you\'ve done');
-        $data[] = array('(cheating, hacking, ...) to enwi2@t-online.de (the e-mail of the owner of Ultimania, Askuri).');
-        $data[] = array('If Askuri thinks you regret whatever you did, he\'ll unban you.');
+        $data[] = array('(cheating, hacking, ...) to askuri (enwi2@t-online.de)');
+        $data[] = array('If he thinks you regret whatever you did, he\'ll unban you.');
         $data[] = array('');
         $data[] = array('Best regards');
         display_manialink($player->login, $header, array('Icons64x64_1', 'TrackInfo', -0.01), $data, array(1.1), 'OK');

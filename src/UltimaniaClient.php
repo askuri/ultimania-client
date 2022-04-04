@@ -195,6 +195,7 @@ class UltimaniaClient {
     }
 
     /**
+     * @todo host it somewhere else? directly in the public folder of the server?
      * @return false|string
      */
     public function fetchInfotextInMainWindow() {
