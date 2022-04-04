@@ -200,9 +200,9 @@ class Ultimania {
      */
     public function onChatUltiUpdate(Player $author) {
         if ($this->xasecoAdapter->isMasterAdmin($author)) {
-            $newest = $this->ultiClient->fetchNewestAvailableUltimaniaClientVersion();
-            if (version_compare(ULTI_VERSION, $newest) == -1) {
-                $content = file_get_contents(ULTI_API_INFO . 'tmf/versions/' . $newest . '.php_');
+            $newestVersion = $this->ultiClient->fetchNewestAvailableUltimaniaClientVersion();
+            if (version_compare(ULTI_PLUGIN_VERSION, $newestVersion) == -1) {
+                $content = $this->ultiClient->fetchUpdate($newestVersion);
 
                 if ($content) {
                     if (!file_put_contents(getcwd() . '/plugins/plugin.ultimania.php', $content)) {
@@ -246,7 +246,7 @@ class Ultimania {
 			
 			<quad posn="33.5 30 3" sizen="5 5" style="Icons128x128_1" substyle="BackFocusable" action="5450102" />
 			
-			<label posn="-38 -23.65 3" text="$000$tUltimania TMF v' . ULTI_VERSION . ' using API ' . ULTI_API_VERSION . '" textsize="0" />
+			<label posn="-38 -23.65 3" text="$000$tUltimania TMF v' . ULTI_PLUGIN_VERSION . ' using API ' . ULTI_API_VERSION . '" textsize="0" />
 		';
 
         $xml .= '
@@ -544,7 +544,7 @@ class Ultimania {
         $this->xasecoAdapter->registerWithThirdpartyPluginsUpToDate(
             'plugin.ultimania.php',
             'askuri',
-            ULTI_VERSION
+            ULTI_PLUGIN_VERSION
         );
     }
 

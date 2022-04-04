@@ -9,10 +9,10 @@ class UltimaniaClient {
     private $dtoMapper;
 
     /** @var string  @todo set correct url*/
-    private $apiUrl = 'http://localhost:8000/api';
+    private $ultimaniaApiServerUrl = 'http://localhost:8000';
 
     /** @var string @todo set correct url */
-    private $manialinksUrl = 'http://localhost:8000/manialinks';
+    private $viewReplayManialinkUrl = 'http://localhost:8000/manialinks/view_replay';
 
     /**
      * @param UltimaniaConfig $config
@@ -126,10 +126,10 @@ class UltimaniaClient {
     private function doRequest($method, $endpoint, $payload, $isBinaryRequest = false) {
         $handle = curl_init();
 
-        $url = $this->apiUrl . '/v' . ULTI_API_VERSION . '/' . $endpoint;
+        $url = $this->ultimaniaApiServerUrl . '/api/v' . ULTI_API_VERSION . '/' . $endpoint;
         $httpHeaders = ['Accept: application/json'];
 
-        curl_setopt($handle, CURLOPT_USERAGENT, 'TMF\Xaseco' . XASECO_VERSION . '\Ultimania' . ULTI_VERSION . '\API' . ULTI_API_VERSION);
+        curl_setopt($handle, CURLOPT_USERAGENT, 'TMF\Xaseco' . XASECO_VERSION . '\Ultimania' . ULTI_PLUGIN_VERSION . '\API' . ULTI_API_VERSION);
         curl_setopt($handle, CURLOPT_HEADER, false);
         curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($handle, CURLOPT_CUSTOMREQUEST, $method);
@@ -178,20 +178,30 @@ class UltimaniaClient {
      * @return string
      */
     public function getLinkForViewReplayManialink($record) {
-        return $this->manialinksUrl . '/view_replay?record_id=' . $record->getId() . '&amp;cache_bust=' . uniqid();
+        return $this->viewReplayManialinkUrl . '?record_id=' . $record->getId() . '&amp;cache_bust=' . uniqid();
     }
 
     /**
      * @return false|string
      */
     public function fetchNewestAvailableUltimaniaClientVersion() {
-        $versionRaw = file_get_contents(ULTI_API_INFO . 'tmf/version.txt');
+        $url = $this->ultimaniaApiServerUrl . '/current_version.txt';
+        $versionRaw = file_get_contents($url);
 
         if ($versionRaw === false) {
-            trigger_error('[Ultimania] Unable to get current version information form ' . ULTI_API_INFO, E_USER_WARNING);
+            trigger_error('[Ultimania] Unable to get current version information from ' . $url, E_USER_WARNING);
             return false;
         }
         return trim($versionRaw);
+    }
+
+    /**
+     * Fetch the Ultimania plugin PHP script from the server.
+     * @param string $version
+     * @return false|string
+     */
+    public function fetchUpdate($version) {
+        return file_get_contents($this->ultimaniaApiServerUrl . '/versions_repository/' . $version . '.php_');
     }
 
     /**
@@ -199,10 +209,11 @@ class UltimaniaClient {
      * @return false|string
      */
     public function fetchInfotextInMainWindow() {
-        $info = file_get_contents(ULTI_API_INFO . 'tmf/description_window.txt');
+        $url = $this->ultimaniaApiServerUrl . '/main_window_info_text.txt';
+        $info = file_get_contents($url);
 
         if ($info === false) {
-            trigger_error('[Ultimania] Unable to get window infobox content from ' . ULTI_API_INFO, E_USER_WARNING);
+            trigger_error('[Ultimania] Unable to get window infobox content from ' . $url, E_USER_WARNING);
             return false;
         }
         return $info;

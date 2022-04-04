@@ -65,9 +65,8 @@ Aseco::addChatCommand('ultiwindow', 'Shows informations about the current map', 
 Aseco::addChatCommand('ultiupdate', 'Updates Ultimania', false); /** @phpstan-ignore-line */
 Aseco::addChatCommand('ultilist', 'Shows all records', false); /** @phpstan-ignore-line */
 
-const ULTI_VERSION      = '2.0.0';
+const ULTI_PLUGIN_VERSION      = '2.0.0';
 const ULTI_API_VERSION  = '5'; // DO NOT CHANGE!!! You may get strange or outdated results so keep it as is
-const ULTI_API_INFO     = 'http://askuri.de/ultimania/'; // This URL is permanent. It will (ok, should) never change and defines the real home of the API
 const ULTI_ID_PREFIX = 5450; // Change this if unexpected things happen when clicking something
 const ULTI_MIN_PHP      = '5.6.0'; // Minimum required PHP version
 const ULTI_MIN_XASECO   = '1.14'; // Minimum required XAseco version
@@ -97,6 +96,7 @@ require 'UltimaniaXasecoAdapter.php';
  * Use the events onUltimaniaRecordsLoadedApi2 and onUltimaniaRecordApi2 instead.
  * I don't guarantee not to break the interface.
  */
+
 $ultiConfig = UltimaniaConfig::instantiateFromFile('ultimania.xml');
 
 $ultiDtoMapper = new UltimaniaDtoMapper();
