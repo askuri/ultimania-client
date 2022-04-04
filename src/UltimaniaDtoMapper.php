@@ -85,10 +85,14 @@ class UltimaniaDtoMapper {
      * @return array{'login': string, 'nick': string, 'allow_replay_download': bool} $playerDto
      */
     public function mapUltiPlayerToPlayerDto(UltimaniaPlayer $player) {
-        return [
+        $dto = [
             'login' => $player->getLogin(),
             'nick' => $player->getNick(),
-            'allow_replay_download' => $player->isAllowReplayDownload(),
         ];
+        if ($player->isAllowReplayDownload() != null) {
+            $dto['is_allow_replay_download'] = $player->isAllowReplayDownload();
+        }
+
+        return $dto;
     }
 }
