@@ -206,15 +206,15 @@ class Ultimania {
 
                 if ($content) {
                     if (!file_put_contents(getcwd() . '/plugins/plugin.ultimania.php', $content)) {
-                        $this->xasecoAdapter->chatSendServerMessageToPlayer('$f00Unable to replace "plugin.ultimania.php". Please check the file-rights and try again.', $author);
+                        $this->xasecoAdapter->chatSendServerMessageToPlayer('$f00Unable to replace "plugin.ultimania.php". Please check the file permissions and try again.', $author);
                     } else {
-                        $this->xasecoAdapter->chatSendServerMessageToPlayer('$0f0Successfully updated. Please restart XAseco', $author);
+                        $this->xasecoAdapter->chatSendServerMessageToPlayer('$0f0Successfully updated. Please restart XAseco.', $author);
                     }
                 } else {
                     $this->xasecoAdapter->chatSendServerMessageToPlayer('$f00Getting newest version file failed!', $author);
                 }
             } else {
-                $this->xasecoAdapter->chatSendServerMessageToPlayer('$0f0No update available', $author);
+                $this->xasecoAdapter->chatSendServerMessageToPlayer('$0f0You are using the newest version.', $author);
             }
         } else {
             $this->xasecoAdapter->chatSendServerMessageToPlayer('$f00No permissions!', $author);
