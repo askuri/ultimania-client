@@ -233,7 +233,7 @@ class Ultimania {
      * @return void
      */
     private function mainWindowShow(Player $player) {
-        $ultinfo = $this->ultiClient->fetchInfotextInMainWindow();
+        $ultinfo = htmlspecialchars($this->ultiClient->fetchInfotextInMainWindow());
 
         $xml = '<manialink id="ultimania_window">
 			
