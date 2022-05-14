@@ -75,7 +75,7 @@ class UltimaniaConfig {
      * @return string
      */
     public function getMessageRecordNew() {
-        return isset($this->messageRecordNew) ? $this->messageRecordNew
+        return !empty($this->messageRecordNew) ? $this->messageRecordNew
             : '{#server}>> {#highlite}{1}{#record} secured his/her {#rank}{2}{#record}. Ultimania Record! Score: {#highlite}{3}{#record} $n({#rank}{4}{#highlite}+{5}{#record})';
     }
 
@@ -83,7 +83,7 @@ class UltimaniaConfig {
      * @return string
      */
     public function getMessageRecordEqual() {
-        return isset($this->messageRecordEqual) ? $this->messageRecordEqual
+        return !empty($this->messageRecordEqual) ? $this->messageRecordEqual
             : '{#server}>> {#highlite}{1}{#record} equaled his/her {#rank}{2}{#record}. Ultimania Record! Score: {#highlite}{3}';
     }
 
@@ -91,7 +91,7 @@ class UltimaniaConfig {
      * @return string
      */
     function getMessageRecordNewRank() {
-        return isset($this->messageRecordNewRank) ? $this->messageRecordNewRank
+        return !empty($this->messageRecordNewRank) ? $this->messageRecordNewRank
             : '{#server}>> {#highlite}{1}{#record} gained the {#rank}{2}{#record}. Ultimania Record! Score: {#highlite}{3}{#record} $n({#rank}{4}{#highlite}+{5}{#record})';
     }
 
@@ -99,7 +99,7 @@ class UltimaniaConfig {
      * @return string
      */
     public function getMessageRecordFirst() {
-        return isset($this->messageRecordFirst) ? $this->messageRecordFirst
+        return !empty($this->messageRecordFirst) ? $this->messageRecordFirst
             : '{#server}>> {#highlite}{1}{#record} claimed the {#rank}{2}{#record}. Ultimania Record! Score: {#highlite}{3}';
     }
 }
