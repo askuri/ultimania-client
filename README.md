@@ -4,28 +4,34 @@
 
 ### Setup
 
-- Git clone TODO
+- `git clone git@github.com:askuri/ultimania-client.git`
 - `composer install`
 - Get a clean xaseco installation and copy it into `xaseco` folder. This helps your IDE with auto-completion.
 
 ### Running this with xaseco directly
+
 If you want to test this in xaseco directly, do the following:
 - Create a symbolic link of [src/plugin.ultimania.php](src/plugin.ultimania.php) into your xaseco plugins folder.
-- Create a symbolic link of [src/ultimania.xml](src/ultimania.xml) into your xaseco folder
+- Create a symbolic link of [src/ultimania.xml](src/ultimania .xml) into your xaseco folder
 - In your plugins.xml, include `<plugin>plugin.ultimania.php</plugin>`
 
 ### Unit tests
+
 Run `composer run-script phpunit`
 
 ### Static analysis
+
 This project uses PHPStan. Run it with `composer run-script phpstan`
 
 ## Building / Packaging
-TODO
+
+- Set date and version in plugin.ultimania.php
+- Copy the content of the includes in plugin.ultimania.php directly into the file, so only one PHP file needs to be released
+- Release plugin.ultimania.php and ultimania.xml
 
 ## Changelog
 
-### 2.0.0 (TODO)
+### 2.0.0 (14.05.2022)
 
 - Cleaned up the code base a good bit
 - Show messages about record improvement on player finish

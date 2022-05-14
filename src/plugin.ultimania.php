@@ -10,12 +10,9 @@
  * 
  * ----------------------------------------------------------------------------------
  * Author:		askuri
- * Version:		See below
- * Date:		TODO
- * Copyright:	2021 Martin Weber
- * Hompeage:	askuri.de
- * Xaseco:		See below
- * PHP:			See below
+ * Version:		See "const ULTI_PLUGIN_VERSION"
+ * Date:		14.05.2022
+ * Copyright:	2022 Martin Weber
  * Game:		Trackmania Forever (TMF) only
  * ----------------------------------------------------------------------------------
  *
@@ -45,7 +42,6 @@
  * Action-IDs:
  * - 5450101 = Open records window
  * - 5450102 = Close records window
- * - 5450103 = Report Map
  * - 5450104 = Open detailed record list
  * - 54502xx = Recordinfo
  */
@@ -65,11 +61,11 @@ Aseco::addChatCommand('ultiwindow', 'Shows informations about the current map', 
 Aseco::addChatCommand('ultiupdate', 'Updates Ultimania', false); /** @phpstan-ignore-line */
 Aseco::addChatCommand('ultilist', 'Shows all records', false); /** @phpstan-ignore-line */
 
-const ULTI_PLUGIN_VERSION      = '2.0.0';
-const ULTI_API_VERSION  = '5'; // DO NOT CHANGE!!! You may get strange or outdated results so keep it as is
-const ULTI_ID_PREFIX = 5450; // Change this if unexpected things happen when clicking something
-const ULTI_MIN_PHP      = '5.6.0'; // Minimum required PHP version
-const ULTI_MIN_XASECO   = '1.14'; // Minimum required XAseco version
+const ULTI_PLUGIN_VERSION = '2.0.0';
+const ULTI_API_VERSION    = '5'; // DO NOT CHANGE!!! You may get strange or outdated results so keep it as is
+const ULTI_ID_PREFIX      = 5450; // Change this if unexpected things happen when clicking something
+const ULTI_MIN_PHP        = '5.6.0'; // Minimum required PHP version
+const ULTI_MIN_XASECO     = '1.14'; // Minimum required XAseco version
 
 const ULTI_EVENT_RECORDS_LOADED_LEGACY = 'onUltimaniaRecordsLoaded';
 const ULTI_EVENT_RECORDS_LOADED_API2   = 'onUltimaniaRecordsLoadedApi2';
