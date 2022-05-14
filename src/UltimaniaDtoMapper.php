@@ -89,8 +89,8 @@ class UltimaniaDtoMapper {
             'login' => $player->getLogin(),
             'nick' => $player->getNick(),
         ];
-        if ($player->isAllowReplayDownload() != null) {
-            $dto['is_allow_replay_download'] = $player->isAllowReplayDownload();
+        if ($player->isAllowReplayDownload() !== null) {
+            $dto['allow_replay_download'] = $player->isAllowReplayDownload();
         }
 
         return $dto;
