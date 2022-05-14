@@ -8,11 +8,14 @@ class UltimaniaClient {
     /** @var UltimaniaDtoMapper */
     private $dtoMapper;
 
-    /** @var string  @todo set correct url*/
-    private $ultimaniaApiServerUrl = 'http://localhost:8000';
+    /** @var string */
+    private $ultimaniaApiServerUrl = 'http://ultimania5.askuri.de';
 
-    /** @var string @todo set correct url */
-    private $viewReplayManialinkUrl = 'http://localhost:8000/manialinks/view_replay';
+    /** @var string */
+    private $adminRecManialinkUrl = 'ulti:admin_rec';
+
+    /** @var string */
+    private $viewReplayManialinkUrl = 'ulti:view_replay';
 
     /**
      * @param UltimaniaConfig $config
@@ -174,11 +177,21 @@ class UltimaniaClient {
     }
 
     /**
+     * @param UltimaniaPlayer $player
+     * @param string $uid
+     * @return string
+     */
+    public function getLinkForAdminRecManialink(UltimaniaPlayer $player, $uid) {
+        return $this->adminRecManialinkUrl. '?uid=' . urlencode($uid) . '&login=' . urlencode($player->getLogin());
+    }
+
+    /**
+     *
      * @param UltimaniaRecord $record
      * @return string
      */
     public function getLinkForViewReplayManialink($record) {
-        return $this->viewReplayManialinkUrl . '?record_id=' . $record->getId() . '&amp;cache_bust=' . uniqid();
+        return $this->viewReplayManialinkUrl . '?record_id=' . urlencode($record->getId()) . '&amp;cache_bust=' . uniqid();
     }
 
     /**
@@ -205,7 +218,6 @@ class UltimaniaClient {
     }
 
     /**
-     * @todo host it somewhere else? directly in the public folder of the server?
      * @return false|string
      */
     public function fetchInfotextInMainWindow() {

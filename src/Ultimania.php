@@ -430,7 +430,7 @@ class Ultimania {
             array('Login', '$FFC' . $record->getPlayer()->getLogin()),
             array('Nickname', '$FFC' . $record->getPlayer()->getNick()),
             array('Recorded on', '$FFC' . $dateTimeStringOrGery),
-            array('$h[ulti:admin_rec?uid=' . $this->xasecoAdapter->getCurrentChallengeObject()->uid . '&login=' . $record->getPlayer()->getLogin() . ']Admin')
+            array('$h[' . $this->ultiClient->getLinkForAdminRecManialink($record->getPlayer(), $this->xasecoAdapter->getCurrentChallengeObject()->uid) . ']Admin')
         );
 
         // display ManiaLink message
