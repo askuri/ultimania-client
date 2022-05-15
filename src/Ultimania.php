@@ -380,7 +380,8 @@ class Ultimania {
 
         // Settings
         $recordsPerPage = 15;
-        $startpage = ceil($this->records->getRankOfPlayer($player->login) / $recordsPerPage);
+        $rankOfPlayer = $this->records->getRankOfPlayer($player->login);
+        $startpage = $rankOfPlayer === false ? 1 : ceil($rankOfPlayer / $recordsPerPage);
         $player->msgs[0] = [$startpage,
             $header,
             array(1.4, 0.1, 0.15, 0.3, 0.35, 0.3, 0.2), // widths: overall, col1, col2, col3, ...
