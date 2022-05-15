@@ -49,6 +49,17 @@ class UltimaniaRecords {
     }
 
     /**
+     * @param string $login
+     * @return int
+     */
+    public function getRankOfPlayer($login) {
+        $playerRecords = array_filter($this->recordsOrderedByScore, function($record) use ($login) {
+            return $record->getPlayer()->getLogin() == $login;
+        });
+        return array_keys($playerRecords)[0] + 1;
+    }
+
+    /**
      * @return bool
      */
     public function isEmpty() {

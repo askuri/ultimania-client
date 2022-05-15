@@ -379,24 +379,28 @@ class Ultimania {
         $player->msgs = [];
 
         // Settings
-        $player->msgs[0] = [1, // startpage
+        $recordsPerPage = 15;
+        $startpage = ceil($this->records->getRankOfPlayer($player->login) / $recordsPerPage);
+        $player->msgs[0] = [$startpage,
             $header,
             array(1.4, 0.1, 0.15, 0.3, 0.35, 0.3, 0.2), // widths: overall, col1, col2, col3, ...
             array('Icons64x64_1', 'TrackInfo') // icon style
         ];
+
         $page = 1;
         foreach ($this->records->getAll() as $id => $record) {
             $time = $this->timestampToDateTimeStringOrGery($record->getAddTime());
+            $playerHighlight = $record->getPlayer()->getLogin() == $player->login ? '{#logina}' : '';
             $player->msgs[$page][] = [
                 $id + 1,
                 $record->getScore(),
                 $record->getPlayer()->getNick(),
-                $record->getPlayer()->getLogin(),
+                $playerHighlight . $record->getPlayer()->getLogin(),
                 $time,
                 $record->isReplayAvailable() ? '$h['.$this->ultiClient->getLinkForViewReplayManialink($record).']Replay' : '',
             ];
 
-            if ((($id + 1) % 15) == 0) $page++;
+            if ((($id + 1) % $recordsPerPage) == 0) $page++;
         }
 
         // display ManiaLink message
