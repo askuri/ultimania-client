@@ -37,6 +37,7 @@ This project uses PHPStan. Run it with `composer run-script phpstan`
 - Show messages about record improvement on player finish
 - Save replays and allow players to view them
 - Fix inconsistent alignment and coloring in PB Widget
+- Fix broken nicknames / character encodings
 - Several minor improvements
 
 ### 1.4.1 (10.8.2016)
