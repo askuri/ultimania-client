@@ -201,20 +201,26 @@ class Ultimania {
     public function onChatUltiUpdate(Player $author) {
         if ($this->xasecoAdapter->isMasterAdmin($author)) {
             $newestVersion = $this->ultiClient->fetchNewestAvailableUltimaniaClientVersion();
-            if (version_compare(ULTI_PLUGIN_VERSION, $newestVersion) == -1) {
-                $content = $this->ultiClient->fetchUpdate($newestVersion);
 
-                if ($content) {
-                    if (!file_put_contents(getcwd() . '/plugins/plugin.ultimania.php', $content)) {
-                        $this->xasecoAdapter->chatSendServerMessageToPlayer('$f00Unable to replace "plugin.ultimania.php". Please check the file permissions and try again.', $author);
+            if ($newestVersion !== false) {
+                /** @var String $newestVersion */
+                if (version_compare(ULTI_PLUGIN_VERSION, $newestVersion) == -1) {
+                    $content = $this->ultiClient->fetchUpdate($newestVersion);
+
+                    if ($content) {
+                        if (!file_put_contents(getcwd() . '/plugins/plugin.ultimania.php', $content)) {
+                            $this->xasecoAdapter->chatSendServerMessageToPlayer('$f00Unable to replace "plugin.ultimania.php". Please check the file permissions and try again.', $author);
+                        } else {
+                            $this->xasecoAdapter->chatSendServerMessageToPlayer('$0f0Successfully updated. Please restart XAseco.', $author);
+                        }
                     } else {
-                        $this->xasecoAdapter->chatSendServerMessageToPlayer('$0f0Successfully updated. Please restart XAseco.', $author);
+                        $this->xasecoAdapter->chatSendServerMessageToPlayer('$f00Getting newest version file failed!', $author);
                     }
                 } else {
-                    $this->xasecoAdapter->chatSendServerMessageToPlayer('$f00Getting newest version file failed!', $author);
+                    $this->xasecoAdapter->chatSendServerMessageToPlayer('$0f0You are using the newest version.', $author);
                 }
             } else {
-                $this->xasecoAdapter->chatSendServerMessageToPlayer('$0f0You are using the newest version.', $author);
+                $this->xasecoAdapter->chatSendServerMessageToPlayer('$f00Unable to get current version information!', $author);
             }
         } else {
             $this->xasecoAdapter->chatSendServerMessageToPlayer('$f00No permissions!', $author);
@@ -233,7 +239,12 @@ class Ultimania {
      * @return void
      */
     private function mainWindowShow(Player $player) {
-        $ultinfo = htmlspecialchars($this->ultiClient->fetchInfotextInMainWindow());
+        $ultiInfoRaw = $this->ultiClient->fetchInfotextInMainWindow();
+        if ($ultiInfoRaw === false) {
+            $ultinfo = '';
+        } else {
+            $ultinfo = htmlspecialchars($ultiInfoRaw);
+        }
 
         $xml = '<manialink id="ultimania_window">
 			
@@ -510,7 +521,7 @@ class Ultimania {
 
         // Check for the right XAseco-Version
         if (defined('XASECO_VERSION')) {
-            if (version_compare(XASECO_VERSION, ULTI_MIN_XASECO, '<')) {
+            if (version_compare(XASECO_VERSION, ULTI_MIN_XASECO, '<')) { /* @phpstan-ignore-line PHPStan takes the XASECO_VERSION from the blank xaseco installation in this project, which is always fulfilling the condition */
                 trigger_error('[Ultimania] Not supported XAseco version (' . XASECO_VERSION . ')! Please update to min. version ' . ULTI_MIN_XASECO . '!', E_USER_ERROR);
             }
         } else {

@@ -34,10 +34,10 @@ class UltimaniaConfig {
 
         if (file_exists($filename)) {
             $rawConfig = simplexml_load_file($filename);
-            $ultiConfig->messageRecordNew = (string)$rawConfig->messages->record_new;
-            $ultiConfig->messageRecordEqual = (string)$rawConfig->messages->record_equal;
-            $ultiConfig->messageRecordNewRank = (string)$rawConfig->messages->record_new_rank;
-            $ultiConfig->messageRecordFirst = (string)$rawConfig->messages->record_first;
+            $ultiConfig->messageRecordNew = (string)$rawConfig->messages->record_new; /* @phpstan-ignore-line */
+            $ultiConfig->messageRecordEqual = (string)$rawConfig->messages->record_equal; /* @phpstan-ignore-line */
+            $ultiConfig->messageRecordNewRank = (string)$rawConfig->messages->record_new_rank; /* @phpstan-ignore-line */
+            $ultiConfig->messageRecordFirst = (string)$rawConfig->messages->record_first; /* @phpstan-ignore-line */
         }
 
         return $ultiConfig;

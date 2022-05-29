@@ -152,6 +152,7 @@ class UltimaniaClient {
         curl_setopt($handle, CURLOPT_LOW_SPEED_TIME, $this->config->getRequestTimeout());
         curl_setopt($handle, CURLOPT_URL, $url);
 
+        /** @var string $response */
         $response = curl_exec($handle);
 
         $httpStatus = (int) curl_getinfo($handle, CURLINFO_HTTP_CODE);

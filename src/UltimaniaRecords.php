@@ -108,7 +108,7 @@ class UltimaniaRecords {
         foreach ($this->recordsOrderedByScore as $record) {
             $indexedByLogin[$record->getPlayer()->getLogin()] = $record;
         }
-        return $indexedByLogin;
+        return $indexedByLogin; /* @phpstan-ignore-line It doesn't really get the return type is actually correct */
     }
 
     /**
@@ -156,7 +156,7 @@ class UltimaniaRecords {
         } else {
             $this->recordsOrderedByScore[] = $newRecord;
         }
-        usort($this->recordsOrderedByScore, "self::sortRecordsDescCallback");
+        usort($this->recordsOrderedByScore, "self::sortRecordsDescCallback"); /* @phpstan-ignore-line PHPStand doesn't understand this string is a callback. */
     }
 
     /**

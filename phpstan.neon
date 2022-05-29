@@ -1,8 +1,7 @@
 parameters:
-	level: 6
+	level: 7
 	paths:
 		- src
 	scanDirectories:
 	    - xaseco
 	ignoreErrors:
-	    - '#Constant [A-Z0-9_]+ not found.#'

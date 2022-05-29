@@ -65,6 +65,6 @@ class UltimaniaLegacyAdapter {
      * @return array{'login': string, "nick": string, "score": int}[]
      */
     private function mapUltimaniaRecordsToLegacyArray($ultiRecords) {
-        return array_map('self::mapUltimaniaRecordToLegacyArray', $ultiRecords);
+        return array_map('self::mapUltimaniaRecordToLegacyArray', $ultiRecords); /* @phpstan-ignore-line PHPStand doesn't understand this string is a callback. */
     }
 }

@@ -10,7 +10,7 @@ class UltimaniaDtoMapper {
         if (empty($dtos)) {
             return [];
         }
-        return array_map('self::mapRecordDtoWithPlayerDtoToUltiRecord', $dtos);
+        return array_map('self::mapRecordDtoWithPlayerDtoToUltiRecord', $dtos); /* @phpstan-ignore-line PHPStand doesn't understand this string is a callback. */
     }
 
     /**
