@@ -81,15 +81,23 @@ class UltimaniaRecords {
 
     /**
      * @param UltimaniaRecord $newRecord
-     * @param string $replayContent
-     * @return UltimaniaRecordImprovement
+     * @param string|null $replayContent Replay, if available
+     * @return UltimaniaRecordImprovement|null
      */
     public function saveRecord($newRecord, $replayContent) {
         $improvement = $this->localInsertOrUpdate($newRecord);
 
         if ($improvement->getType() != UltimaniaRecordImprovement::TYPE_NO_IMPROVEMENT) {
             $savedRecord = $this->ultiClient->submitRecord($newRecord, $newRecord->getMapUid());
-            $replayAvailable = $this->ultiClient->submitReplay($savedRecord->getId(), $replayContent)['replay_available'];
+            if ($savedRecord == null) {
+                return null;
+            }
+
+            if ($replayContent !== null) {
+                $replayAvailable = $this->ultiClient->submitReplay($savedRecord->getId(), $replayContent)['replay_available'];
+            } else {
+                $replayAvailable = false;
+            }
 
             // post-saving updates
             $referenceToLocallySavedRecord = $this->getRecordByLogin($newRecord->getPlayer()->getLogin());

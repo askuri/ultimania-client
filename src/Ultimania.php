@@ -67,6 +67,10 @@ class Ultimania {
             $this->xasecoAdapter->getBestReplayForPlayer($finish_item->player)
         );
 
+        if ($improvement == null) {
+            return;
+        }
+
         $newRecord = $improvement->getNewRecord();
 
         $this->displayPlayerFinishChatMessage($finish_item->player, $improvement);
@@ -81,7 +85,7 @@ class Ultimania {
     public function onPlayerConnect(Player $player) {
         $playerFromApi = $this->ultiClient->registerOrUpdatePlayer($this->mapXasecoPlayerToUltiPlayer($player));
 
-        if ($playerFromApi->isBanned()) {
+        if ($playerFromApi != null && $playerFromApi->isBanned()) {
             $this->showBannedPlayerInfoWindow($player);
         }
 
@@ -315,12 +319,14 @@ class Ultimania {
         }
         $xml .= '</frame>';
 
-        $xml .= '<frame posn="0.2 -20 0">';
-        $allowReplayDownload = $this->ultiClient->getPlayerInfo($player->login)->isAllowReplayDownload();
-        $allowReplayDownloadSubstyle = $allowReplayDownload == true ? "LvlGreen" : "LvlRed";
-        $xml .= '<quad posn="0.4 0 5" sizen="1.5 1.5" style="Icons64x64_1" substyle="' . $allowReplayDownloadSubstyle . '" valign="center"/>';
-        $xml .= '<label posn="0 0 1" style="CardButtonSmallWide" text="Allow players to view my replays" valign="center" scale="0.77" action="' . ULTI_ID_PREFIX . 105 . '"/>';
-        $xml .= '</frame>';
+        $ultimaniaPlayer = $this->ultiClient->getPlayerInfo($player->login);
+        if ($ultimaniaPlayer != null) {
+            $allowReplayDownloadSubstyle = $ultimaniaPlayer->isAllowReplayDownload() == true ? "LvlGreen" : "LvlRed";
+            $xml .= '<frame posn="0.2 -20 0">';
+            $xml .= '<quad posn="0.4 0 5" sizen="1.5 1.5" style="Icons64x64_1" substyle="' . $allowReplayDownloadSubstyle . '" valign="center"/>';
+            $xml .= '<label posn="0 0 1" style="CardButtonSmallWide" text="Allow players to view my replays" valign="center" scale="0.77" action="' . ULTI_ID_PREFIX . 105 . '"/>';
+            $xml .= '</frame>';
+        }
 
         $xml .= '</manialink>';
 

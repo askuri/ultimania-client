@@ -71,7 +71,7 @@ class UltimaniaClient {
 
     /**
      * @param string $playerLogin
-     * @return UltimaniaPlayer
+     * @return UltimaniaPlayer|null
      */
     public function getPlayerInfo($playerLogin) {
         return $this->dtoMapper->mapPlayerDtoToUltiPlayer(
@@ -85,7 +85,7 @@ class UltimaniaClient {
 
     /**
      * @param UltimaniaPlayer $player
-     * @return UltimaniaPlayer
+     * @return UltimaniaPlayer|null
      */
     public function registerOrUpdatePlayer($player) {
         return $this->dtoMapper->mapPlayerDtoToUltiPlayer(
@@ -103,8 +103,10 @@ class UltimaniaClient {
      */
     public function toggleAllowReplayDownlod($playerLogin) {
         $ultiPlayer = $this->getPlayerInfo($playerLogin);
-        $ultiPlayer->setAllowReplayDownload( ! $ultiPlayer->isAllowReplayDownload());
-        $this->registerOrUpdatePlayer($ultiPlayer);
+        if ($ultiPlayer) {
+            $ultiPlayer->setAllowReplayDownload(!$ultiPlayer->isAllowReplayDownload());
+            $this->registerOrUpdatePlayer($ultiPlayer);
+        }
     }
 
     /**

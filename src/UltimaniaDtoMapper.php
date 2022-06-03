@@ -68,10 +68,13 @@ class UltimaniaDtoMapper {
     }
 
     /**
-     * @param array{'login': string, 'nick': string, 'allow_replay_download': bool, 'banned': bool} $playerDto
-     * @return UltimaniaPlayer
+     * @param array{'login': string, 'nick': string, 'allow_replay_download': bool, 'banned': bool}|null $playerDto
+     * @return UltimaniaPlayer|null
      */
     public function mapPlayerDtoToUltiPlayer($playerDto) {
+        if (empty($playerDto)) {
+            return null;
+        }
         return new UltimaniaPlayer(
             $playerDto['login'],
             $playerDto['nick'],
