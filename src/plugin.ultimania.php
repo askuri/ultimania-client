@@ -63,7 +63,7 @@ Aseco::addChatCommand('ultilist', 'Shows all records', false); /** @phpstan-igno
 
 const ULTI_PLUGIN_VERSION = '2.0.1';
 const ULTI_API_VERSION    = '5'; // DO NOT CHANGE!!! You may get strange or outdated results so keep it as is
-const ULTI_ID_PREFIX      = 5450; // Change this if unexpected things happen when clicking something
+const ULTI_ID_PREFIX      = '5450'; // Change this if unexpected things happen when clicking something
 const ULTI_MIN_PHP        = '5.6.0'; // Minimum required PHP version
 const ULTI_MIN_XASECO     = '1.14'; // Minimum required XAseco version
 
