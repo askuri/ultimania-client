@@ -132,7 +132,7 @@ class UltimaniaClient {
         $handle = curl_init();
 
         $url = $this->ultimaniaApiServerUrl . '/api/v' . ULTI_API_VERSION . '/' . $endpoint;
-        $httpHeaders = ['Accept: application/json'];
+        $httpHeaders = ['Accept: application/json', 'X-Request-Id: ' . uniqid()];
 
         curl_setopt($handle, CURLOPT_USERAGENT, 'TMF\Xaseco' . XASECO_VERSION . '\Ultimania' . ULTI_PLUGIN_VERSION . '\API' . ULTI_API_VERSION);
         curl_setopt($handle, CURLOPT_HEADER, false);
