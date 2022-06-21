@@ -31,6 +31,10 @@ This project uses PHPStan. Run it with `composer run-script phpstan`
 
 ## Changelog
 
+### 2.0.1 (21.06.2022)
+- Fix Xaseco crashes if errors on Ultimania Server side occur
+- Send RequestIds with every request and log them on error
+
 ### 2.0.0 (14.05.2022)
 
 - Cleaned up the code base a good bit
