@@ -72,8 +72,9 @@ class Ultimania {
         }
 
         $newRecord = $improvement->getNewRecord();
-
-        $this->displayPlayerFinishChatMessage($finish_item->player, $improvement);
+        if ($this->config->getShowRecordMessages()) {
+            $this->displayPlayerFinishChatMessage($finish_item->player, $improvement);
+        }
 
         $this->releaseUltimaniaRecordEvent($newRecord);
     }
@@ -602,7 +603,7 @@ class Ultimania {
         $message = $this->generatePlayerFinishMessage($player, $improvement);
 
         if ($message) {
-            if ($improvement->getNewRank() <= $this->config->getNumberOfRecordsDisplayLimit()) {
+            if ($improvement->getNewRank() <= $this->config->getMinimumRankForPublicRecordMessages()) {
                 // only show the message publicly, if it's within the display limit
                 $this->xasecoAdapter->chatSendServerMessage($this->xasecoAdapter->formatColors($message));
             } else {

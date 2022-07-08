@@ -12,6 +12,10 @@ class UltimaniaConfig {
     private $number_of_records_display_limit = 25;
 
     // configurable via XML with defaults in this file
+    /** @var boolean|null */
+    private $showRecordMessages;
+    /** @var int|null */
+    private $minimumRankForPublicRecordMessages;
     /** @var string|null */
     private $messageRecordNew;
     /** @var string|null */
@@ -34,6 +38,8 @@ class UltimaniaConfig {
 
         if (file_exists($filename)) {
             $rawConfig = simplexml_load_file($filename);
+            $ultiConfig->showRecordMessages = !empty($rawConfig->messages->show_record_messages) ? filter_var($rawConfig->messages->show_record_messages, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) : null;
+            $ultiConfig->minimumRankForPublicRecordMessages = (int)$rawConfig->messages->minimum_rank_for_public_record_message; /* @phpstan-ignore-line */
             $ultiConfig->messageRecordNew = (string)$rawConfig->messages->record_new; /* @phpstan-ignore-line */
             $ultiConfig->messageRecordEqual = (string)$rawConfig->messages->record_equal; /* @phpstan-ignore-line */
             $ultiConfig->messageRecordNewRank = (string)$rawConfig->messages->record_new_rank; /* @phpstan-ignore-line */
@@ -69,6 +75,20 @@ class UltimaniaConfig {
      */
     public function getNumberOfRecordsDisplayLimit() {
         return $this->number_of_records_display_limit;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function getShowRecordMessages() {
+        return $this->showRecordMessages !== null ? $this->showRecordMessages : true;
+    }
+
+    /**
+     * @return int
+     */
+    public function getMinimumRankForPublicRecordMessages() {
+        return !empty($this->minimumRankForPublicRecordMessages) ? $this->minimumRankForPublicRecordMessages : 25;
     }
 
     /**

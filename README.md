@@ -12,7 +12,7 @@
 
 If you want to test this in xaseco directly, do the following:
 - Create a symbolic link of [src/plugin.ultimania.php](src/plugin.ultimania.php) into your xaseco plugins folder.
-- Create a symbolic link of [src/ultimania.xml](src/ultimania .xml) into your xaseco folder
+- Create a symbolic link of [src/ultimania.xml](src/ultimania.xml) into your xaseco folder
 - In your plugins.xml, include `<plugin>plugin.ultimania.php</plugin>`
 
 ### Unit tests
@@ -30,6 +30,9 @@ This project uses PHPStan. Run it with `composer run-script phpstan`
 - Release plugin.ultimania.php and ultimania.xml
 
 ## Changelog
+
+### 2.1.0 (08.07.2022)
+- Record improvement messages can be disabled. Also, the threshold at which a message is public or private can be configured.
 
 ### 2.0.1 (21.06.2022)
 - Fix Xaseco crashes if errors on Ultimania Server side occur

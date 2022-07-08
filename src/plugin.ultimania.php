@@ -11,7 +11,7 @@
  * ----------------------------------------------------------------------------------
  * Author:		askuri
  * Version:		See "const ULTI_PLUGIN_VERSION"
- * Date:		03.06.2022
+ * Date:		08.07.2022
  * Copyright:	2022 Martin Weber
  * Game:		Trackmania Forever (TMF) only
  * ----------------------------------------------------------------------------------
@@ -61,7 +61,7 @@ Aseco::addChatCommand('ultiwindow', 'Shows informations about the current map', 
 Aseco::addChatCommand('ultiupdate', 'Updates Ultimania', false); /** @phpstan-ignore-line */
 Aseco::addChatCommand('ultilist', 'Shows all records', false); /** @phpstan-ignore-line */
 
-const ULTI_PLUGIN_VERSION = '2.0.1';
+const ULTI_PLUGIN_VERSION = '2.1.0';
 const ULTI_API_VERSION    = '5'; // DO NOT CHANGE!!! You may get strange or outdated results so keep it as is
 const ULTI_ID_PREFIX      = '5450'; // Change this if unexpected things happen when clicking something
 const ULTI_MIN_PHP        = '5.6.0'; // Minimum required PHP version

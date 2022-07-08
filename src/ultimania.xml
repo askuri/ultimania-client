@@ -2,6 +2,8 @@
 <ultimania>
     <messages>
         <!-- record messages -->
+        <show_record_messages>true</show_record_messages> <!-- Whether to show record improvement messages at all -->
+        <minimum_rank_for_public_record_message>25</minimum_rank_for_public_record_message> <!-- Records worse than this rank won't result in a public message. Only relevant if show_records_messages is true. -->
         <record_new>{#server}>> {#highlite}{1}{#record} secured his/her {#rank}{2}{#record}. Ultimania Record! Score: {#highlite}{3}{#record} $n({#rank}{4}{#highlite}+{5}{#record})</record_new>
         <record_equal>{#server}>> {#highlite}{1}{#record} equaled his/her {#rank}{2}{#record}. Ultimania Record! Score: {#highlite}{3}</record_equal>
         <record_new_rank>{#server}>> {#highlite}{1}{#record} gained the {#rank}{2}{#record}. Ultimania Record! Score: {#highlite}{3}{#record} $n({#rank}{4}{#highlite}+{5}{#record})</record_new_rank>
